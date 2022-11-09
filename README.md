@@ -12,6 +12,10 @@ Dynamic MRP:
 
 -   <http://www.stat.columbia.edu/~gelman/research/unpublished/MRT(1).pdf>
 
+Interesting Papers:
+
+-   [Forecasting elections with non-representative polls (microsoft.com)](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/04/forecasting-with-nonrepresentative-polls.pdf)
+
 Helpful code :
 
 -   [philswatton/mrpLR (github.com)](https://github.com/philswatton/mrpLR) (especially for how to make poststratification frames using raking)
