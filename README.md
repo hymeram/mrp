@@ -18,4 +18,4 @@ Interesting Papers:
 
 Helpful code :
 
--   [philswatton/mrpLR (github.com)](https://github.com/philswatton/mrpLR) (especially for how to make poststratification frames using raking)
+-   [philswatton/mrpLR (github.com)](https://github.com/philswatton/mrpLR) (especially useful script for making poststratification frames using survey raking)
