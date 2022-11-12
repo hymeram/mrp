@@ -40,18 +40,13 @@ bes_clean <- bes %>%
     britishness,englishness,scottishness,welshness,
     country,gor,pano,pcon,gender,age,p_housing,p_education,p_socgrade) %>%
   na_if(9999) %>%
-  mutate_at(vars("britishness","englishness","scottishness","welshness"), replace_na, 0) %>%
-  mutate(
-    primary_id = case_when(
-      britishness > englishness & britishness > scottishness & britishness > welshness ~ "British",
-      englishness > britishness & englishness > scottishness & englishness > welshness ~ "English",
-      englishness == britishness & englishness > scottishness & englishness > welshness ~ "British & English equally",
-      scottishness > britishness & scottishness > englishness & scottishness > welshness  ~ "Scottish",
-      scottishness == britishness & scottishness > englishness & scottishness > welshness ~ "British & Scottish equally",
-      welshness > britishness & welshness > englishness & welshness > scottishness  ~ "Welsh",
-      welshness == britishness & welshness > englishness & welshness > scottishness ~ "British & Welsh equally",
-      TRUE ~ NA_character_)) %>%
+  mutate_at(vars("britishness","englishness","scottishness","welshness"), replace_na, 1) %>%
+  mutate_at(vars("britishness","englishness","scottishness","welshness"), as.numeric) %>%
   as_factor() %>%
+  mutate(britishness = britishness-1)
+
+
+bes_clean <- bes_clean %>%
   mutate(
     housing = ifelse(p_housing == "Own â€“ outright" | p_housing == "Own â€“ with a mortgage", "Owns", "Rents"),
     sex = gender,
@@ -84,15 +79,34 @@ bes_clean <- bes %>%
     age0 = cut(as.numeric(age), 
       breaks=c(-Inf, 19, 24, 29, 44, 59, 64, 74, Inf), 
       labels=c("16-19","20-24","25-29","30-44","45-59","60-64","65-74","75+"))) %>%
-  select(country,gor,pano,pcon,primary_id,housing,sex,hrsocgrd,education,age0)
+  select(-age,-p_housing,-p_education,-p_socgrade,-englishness,-scottishness,-welshness) 
 
 # merge with aux data 
 df <- bes_clean %>%
-  drop_na()
   merge(aux, by="pano")
 
-# build model
 
+# build model ------------------------------------------------------------------
+model <-  brm(
+  'britishness ~ 
+  (1|education:country) + 
+  (1|age0:country) + 
+  (1|hrsocgrd:country) + 
+  (1|housing:country) + 
+  (1|pcon) + 
+  (1|country) +
+  sex +
+  Con19 +
+  Lab19 + 
+  SNP19 + 
+  UKIP19 + 
+  PC19',
+  data = df, 
+  family = gaussian(),
+  iters = 1000,
+  chains = 2,
+  cores = 4
+  )
 
 # model diagnostics
 
