@@ -1,7 +1,8 @@
 # libraries --------------------------------------------------------------------
 library(haven)
 library(tidyverse)
-library(brms)
+library(lme4)
+options(scipen = 999)
 
 setwd("MRP example - UK national identity")
 
@@ -18,11 +19,17 @@ aux_location <- "C:/Users/Alex/Documents/Data/BES-2019-General-Election-results-
 aux <- readxl::read_excel(aux_location) %>%
   select(pano,
          ONSConstID,
+         Country,
          Con19,
          Lab19,
          SNP19,
          PC19,
-         UKIP19) %>%
+         Brexit19,
+         leaveHanretty,
+         c11PopulationDensity,
+         c11BornUK,
+         c11Retired,
+         c11DeprivedNone) %>%
   replace(is.na(.), 0)
 
 # import poststratification frame ----------------------------------------------
@@ -31,7 +38,7 @@ aux <- readxl::read_excel(aux_location) %>%
 # https://journals.sagepub.com/doi/10.1177/1478929919864773#supplementary-materials 
 
 psf_location <- "C:/Users/Alex/Documents/Data/hlv_psw.csv"
-psf <- read.csv(psf_location)
+psf <- read.csv(psf_location, stringsAsFactors = FALSE)
 
 # clean data to match psf ------------------------------------------------------
 
@@ -85,34 +92,66 @@ bes_clean <- bes_clean %>%
 df <- bes_clean %>%
   merge(aux, by="pano")
 
-
 # build model ------------------------------------------------------------------
-model <-  brm(
+
+model <-  lme4::lmer(
   'britishness ~ 
-  (1|education:country) + 
-  (1|age0:country) + 
-  (1|hrsocgrd:country) + 
-  (1|housing:country) + 
+  (1|age0) + 
+  (1|education) + 
   (1|pcon) + 
-  (1|country) +
+  (1|age0:country) + 
+  (1|education:country) + 
   sex +
+  housing +
+  country +
+  hrsocgrd +
   Con19 +
-  Lab19 + 
   SNP19 + 
-  UKIP19 + 
-  PC19',
-  data = df, 
-  family = gaussian(),
-  iters = 1000,
-  chains = 2,
-  cores = 4
+  Brexit19 + 
+  PC19 +
+  leaveHanretty +
+  c11BornUK +
+  c11DeprivedNone',
+  data = df
   )
 
-# model diagnostics
+summary(model)
 
-# predict psf categories
+# model diagnostics -----------------------------------------------------------
+plot(model)
+ranef(model)
+sjPlot::plot_model(model, "re")
+sjPlot::plot_model(model, "est")
+
+# poststratification -----------------------------------------------------------
+
+# match psf to model
+psf <- psf %>%
+  merge(aux, by.x="GSSCode", by.y="ONSConstID") %>%
+  rename(c(country = Country, pcon = GSSCode))
+
+# predict onto psf
+psf$est <- predict(model, psf, allow.new.levels=T)
+
+# combines estimates by constituency
+mrp_estimates <- psf %>%
+  group_by(country, pcon) %>%
+  summarise(mrp_est = sum(est*weight, na.rm=T)) %>%
+  ungroup()
 
 # compare estimates to direct estimates
+direct <- df %>%
+  group_by(country, ONSConstID) %>%
+  summarise(direct_est = mean(britishness, na.rm=T)) 
+
+direct %>%
+  merge(.,mrp_estimates, by.x="ONSConstID", by.y="pcon") %>%
+  slice_sample(n = 100) %>%
+  ggplot(aes(y=forcats::fct_reorder(ONSConstID, mrp_est+direct_est/2))) +
+  geom_point(aes(x=direct_est), colour="red") +
+  geom_point(aes(x=mrp_est), colour="blue")
+
+# display data ---------------------------------------------------------------
 
 # map estimates
 
