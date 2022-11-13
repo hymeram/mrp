@@ -169,7 +169,8 @@ ggplot(mrp_estimates, aes(y=likeLabour, x=likeStarmer)) +
 
 # display data -----------------------------------------------------------------
 
-# map estimates
+# contrast likeability
+
 shapefile <- sf::read_sf("C:/Users/Alex/Documents/Data/Constituencies/Westminster_Parliamentary_Constituencies_(December_2019)_Boundaries_UK_BUC.shp") %>%
   merge(mrp_estimates, by.y = "pcon", by.x = "pcon19cd") %>%
   sf::st_transform(., 27700) %>%
@@ -178,7 +179,6 @@ shapefile <- sf::read_sf("C:/Users/Alex/Documents/Data/Constituencies/Westminste
 labs <- c("Like Labour", "Like Starmer")
 names(labs) <- c("likeLabour", "likeStarmer")
 
-# contrast likeability
 map <- ggplot(shapefile) +
   geom_sf(aes(fill=value), colour = "white", size = NA) + 
   theme_bw() +
@@ -202,3 +202,34 @@ map <- ggplot(shapefile) +
 ggsave("Labour_Starmer_Likeability_Comparison.png", map, dpi=300, height=10, width=12)
 
 # where is Kier an asset
+hex <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "4 Constituencies") %>%
+  merge(mrp_estimates, by.y = "pcon", by.x = "pcon.code") %>%
+  mutate(likeability_diff = likeStarmer - likeLabour)
+
+background <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "5 Background") %>%
+  filter(Name != "Ireland")
+
+group_outlines <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "2 Group outlines") %>%
+  filter(RegionNati != "Northern Ireland")
+
+hex_map <- ggplot(hex) +
+  geom_sf(data=background, fill="grey", colour = "white", size = NA) +
+  geom_sf(aes(fill=likeability_diff), colour = "white", size = NA) +
+  geom_sf(data=group_outlines, fill=NA, colour = "black", size = .5) +
+  theme_void() +
+  scale_fill_distiller(
+    name = "Starmer more/less\nlikeable than Labour\nas a whole",
+    palette = "PiYG",
+    limits = c(-1,1)) +
+  labs(
+    title = "Where is Kier Starmer more popular than Labour as a whole?",
+    subtitle = "Constituency estimates modelled using Multilevel Regression and Poststratification",
+    caption = "Hexmap created by the House of Commons Library:\nhttps://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous") +
+  theme(plot.title = element_text(size = 14, face = "bold"),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        panel.background = element_rect(fill = "white", colour = "white"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+ggsave("Labour_Starmer_Net_Likeability.png", hex_map, dpi=300, height=10, width=8,bg="white")

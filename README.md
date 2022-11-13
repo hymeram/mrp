@@ -4,6 +4,8 @@
 
 <img src="starmer_likeability_mrp/Labour_Starmer_Likeability_Comparison.png" width="699"/>
 
+<img src="starmer_likeability_mrp/Labour_Starmer_Net_Likeability.png" width="551"/>
+
 ## Useful links:
 
 Intros to MRP:
