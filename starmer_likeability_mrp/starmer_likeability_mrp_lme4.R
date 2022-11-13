@@ -6,7 +6,7 @@ library(sf)
 library(scico)
 options(scipen = 999)
 
-setwd("MRP example - UK national identity")
+setwd("starmer_likeability_mrp")
 
 # import british election study data -------------------------------------------
 
@@ -128,7 +128,6 @@ labour_model <-  lme4::lmer(
   sex +
   housing +
   Lab15 + 
-  Lab19 + 
   leaveHanretty +
   c11DeprivedNone +
   c11Retired +
@@ -200,6 +199,6 @@ map <- ggplot(shapefile) +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-map
+ggsave("Labour_Starmer_Likeability_Comparison.png", map, dpi=300, height=10, width=12)
 
 # where is Kier an asset

@@ -1,5 +1,9 @@
 # Multilevel Regression and Poststratification (MRP)
 
+## Example 1: Keir Starmer's Likability
+
+<img src="starmer_likeability_mrp/Labour_Starmer_Likeability_Comparison.png" width="699"/>
+
 ## Useful links:
 
 Intros to MRP:
