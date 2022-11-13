@@ -102,6 +102,7 @@ starmer_model <-  lme4::lmer(
   (1|age0) + 
   (1|age0:sex) + 
   (1|education) + 
+  (1|education:age0) + 
   (1|hrsocgrd) + 
   sex +
   housing +
@@ -114,7 +115,7 @@ starmer_model <-  lme4::lmer(
   data = df
   )
 
-summary(model)
+summary(starmer_model)
 
 # Like Labour
 labour_model <-  lme4::lmer(
@@ -152,24 +153,19 @@ psf <- psf %>%
 # predict onto psf
 psf$likeStarmer <- predict(starmer_model, psf, allow.new.levels=T)
 psf$likeLabour <- predict(labour_model, psf, allow.new.levels=T)
+psf$likeability_diff <- psf$likeStarmer - psf$likeLabour 
+
 
 # combines estimates by constituency
 mrp_estimates <- psf %>%
   group_by(country, Winner19, ConstituencyName, pcon) %>%
   summarise(likeStarmer = sum(likeStarmer*weight, na.rm=T),
-            likeLabour = sum(likeLabour*weight, na.rm=T))
-
-# plot comparison
-ggplot(mrp_estimates, aes(y=likeLabour, x=likeStarmer)) +
-  geom_point(aes(colour = Winner19), size=2) +
-  theme_bw() + 
-  scale_colour_manual(values = c(
-    "blue", "darkgreen", "red", "orange", "green", "gold", "grey"
-    ))
+            likeLabour = sum(likeLabour*weight, na.rm=T),
+            likeability_diff = sum(likeability_diff*weight, na.rm=T))
 
 # display data -----------------------------------------------------------------
 
-# contrast likeability
+# contrast likeability of Labour and Starmer
 
 shapefile <- sf::read_sf("C:/Users/Alex/Documents/Data/Constituencies/Westminster_Parliamentary_Constituencies_(December_2019)_Boundaries_UK_BUC.shp") %>%
   merge(mrp_estimates, by.y = "pcon", by.x = "pcon19cd") %>%
@@ -183,7 +179,7 @@ map <- ggplot(shapefile) +
   geom_sf(aes(fill=value), colour = "white", size = NA) + 
   theme_bw() +
   facet_wrap(~name, labeller = labeller(name = labs)) +
-  labs(title = "Comparison of the Likeability of Labour and Keir Starmer",
+  labs(title = "Comparison of the likeability of Labour and Keir Starmer",
        subtitle = "Constituency estimates modelled using Multilevel Regression and Poststratification",
        caption = "Please note the midpoint of the colour scale is not set to 5") +
   scale_fill_gradient2(
@@ -201,10 +197,12 @@ map <- ggplot(shapefile) +
 
 ggsave("Labour_Starmer_Likeability_Comparison.png", map, dpi=300, height=10, width=12)
 
-# where is Kier an asset
+# where is Kier an asset?
+
+# shapefile from: https://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous
+
 hex <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "4 Constituencies") %>%
-  merge(mrp_estimates, by.y = "pcon", by.x = "pcon.code") %>%
-  mutate(likeability_diff = likeStarmer - likeLabour)
+  merge(mrp_estimates, by.y = "pcon", by.x = "pcon.code")
 
 background <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "5 Background") %>%
   filter(Name != "Ireland")
@@ -233,3 +231,40 @@ hex_map <- ggplot(hex) +
         panel.grid.minor = element_blank())
 
 ggsave("Labour_Starmer_Net_Likeability.png", hex_map, dpi=300, height=10, width=8,bg="white")
+
+
+# breakdown support by age
+
+subgroup_mrp_estimates <- psf %>%
+  group_by(country, Winner19, ConstituencyName, pcon, age0) %>%
+  mutate(weight2 = weight/sum(weight)) %>%
+  summarise(likeStarmer = sum(likeStarmer*weight2, na.rm=T),
+            likeLabour = sum(likeLabour*weight2, na.rm=T),
+            likeability_diff = sum(likeability_diff*weight2, na.rm=T),
+            weight = sum(weight))
+
+hex <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "4 Constituencies") %>%
+  merge(subgroup_mrp_estimates, by.y = "pcon", by.x = "pcon.code")
+
+hex_map_age <- ggplot(hex) +
+  geom_sf(data=background, fill="grey", colour = "white", size = NA) +
+  geom_sf(aes(fill=likeability_diff), colour = "white", size = NA) +
+  geom_sf(data=group_outlines, fill=NA, colour = "black", size = .5) +
+  facet_wrap(~age0) +
+  theme_bw() +
+  scale_fill_distiller(
+    name = "Starmer more/less\nlikeable than Labour\nas a whole",
+    palette = "PiYG",
+    limits = c(-1.5,1.5)) +
+  labs(
+    title = "Relationship between age and Keir Starmer's popularity by constituency?",
+    subtitle = "Constituency estimates modelled using Multilevel Regression and Poststratification",
+    caption = "Hexmap created by the House of Commons Library:\nhttps://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous") +
+  theme(plot.title = element_text(size = 14, face = "bold"),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.text = element_text(size = 12, face = "bold"))
+
+ggsave("Labour_Starmer_Net_Likeability_By_Age.png", hex_map_age, dpi=300, height=14, width=10,bg="white")

@@ -6,6 +6,8 @@
 
 <img src="starmer_likeability_mrp/Labour_Starmer_Net_Likeability.png" width="551"/>
 
+![](starmer_likeability_mrp/Labour_Starmer_Net_Likeability_By_Age.png)
+
 ## Useful links:
 
 Intros to MRP:
