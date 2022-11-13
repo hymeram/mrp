@@ -183,7 +183,7 @@ map <- ggplot(shapefile) +
   geom_sf(aes(fill=value), colour = "white", size = NA) + 
   theme_bw() +
   facet_wrap(~name, labeller = labeller(name = labs)) +
-  labs(title = "Comparison of the Likeability of Labour and Kier Starmer",
+  labs(title = "Comparison of the Likeability of Labour and Keir Starmer",
        subtitle = "Constituency estimates modelled using Multilevel Regression and Poststratification",
        caption = "Please note the midpoint of the colour scale is not set to 5") +
   scale_fill_gradient2(
@@ -222,7 +222,7 @@ hex_map <- ggplot(hex) +
     palette = "PiYG",
     limits = c(-1,1)) +
   labs(
-    title = "Where is Kier Starmer more popular than Labour as a whole?",
+    title = "Where is Keir Starmer more popular than Labour as a whole?",
     subtitle = "Constituency estimates modelled using Multilevel Regression and Poststratification",
     caption = "Hexmap created by the House of Commons Library:\nhttps://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous") +
   theme(plot.title = element_text(size = 14, face = "bold"),
