@@ -155,7 +155,6 @@ psf$likeStarmer <- predict(starmer_model, psf, allow.new.levels=T)
 psf$likeLabour <- predict(labour_model, psf, allow.new.levels=T)
 psf$likeability_diff <- psf$likeStarmer - psf$likeLabour 
 
-
 # combines estimates by constituency
 mrp_estimates <- psf %>%
   group_by(country, Winner19, ConstituencyName, pcon) %>%
@@ -166,22 +165,32 @@ mrp_estimates <- psf %>%
 # display data -----------------------------------------------------------------
 
 # contrast likeability of Labour and Starmer
+# shapefile from: https://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous
 
-shapefile <- sf::read_sf("C:/Users/Alex/Documents/Data/Constituencies/Westminster_Parliamentary_Constituencies_(December_2019)_Boundaries_UK_BUC.shp") %>%
-  merge(mrp_estimates, by.y = "pcon", by.x = "pcon19cd") %>%
+shapefile <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "4 Constituencies") %>%
+  merge(mrp_estimates, by.y = "pcon", by.x = "pcon.code") %>%
   sf::st_transform(., 27700) %>%
   pivot_longer(., cols = c(likeLabour, likeStarmer))
+  
+background <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "5 Background") %>%
+  filter(Name != "Ireland")
+
+group_outlines <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "2 Group outlines") %>%
+  filter(RegionNati != "Northern Ireland")
 
 labs <- c("Like Labour", "Like Starmer")
 names(labs) <- c("likeLabour", "likeStarmer")
 
 map <- ggplot(shapefile) +
+  geom_sf(data=background, fill="grey", colour = "white", size = NA) +
   geom_sf(aes(fill=value), colour = "white", size = NA) + 
+  geom_sf(data=group_outlines, fill=NA, colour = "black", size = .5) +
   theme_bw() +
   facet_wrap(~name, labeller = labeller(name = labs)) +
   labs(title = "Comparison of the likeability of Labour and Keir Starmer",
        subtitle = "Constituency estimates modelled using Multilevel Regression and Poststratification",
-       caption = "Please note the midpoint of the colour scale is not set to 5") +
+       caption = "Please note the midpoint of the colour scale is not set to 5\n
+       Hexmap created by the House of Commons Library:\nhttps://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous") +
   scale_fill_gradient2(
     low = "royalblue1", 
     mid = "gray85",
@@ -199,16 +208,8 @@ ggsave("Labour_Starmer_Likeability_Comparison.png", map, dpi=300, height=12, wid
 
 # where is Kier an asset?
 
-# shapefile from: https://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous
-
 hex <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "4 Constituencies") %>%
   merge(mrp_estimates, by.y = "pcon", by.x = "pcon.code")
-
-background <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "5 Background") %>%
-  filter(Name != "Ireland")
-
-group_outlines <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "2 Group outlines") %>%
-  filter(RegionNati != "Northern Ireland")
 
 hex_map <- ggplot(hex) +
   geom_sf(data=background, fill="grey", colour = "white", size = NA) +
