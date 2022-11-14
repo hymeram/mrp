@@ -195,7 +195,7 @@ map <- ggplot(shapefile) +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-ggsave("Labour_Starmer_Likeability_Comparison.png", map, dpi=300, height=10, width=12)
+ggsave("Labour_Starmer_Likeability_Comparison.png", map, dpi=300, height=12, width=14)
 
 # where is Kier an asset?
 
