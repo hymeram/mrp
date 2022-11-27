@@ -167,6 +167,7 @@ mrp_estimates <- psf %>%
 # contrast likeability of Labour and Starmer
 # shapefile from: https://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous
 
+# import geographic data
 shapefile <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "4 Constituencies") %>%
   merge(mrp_estimates, by.y = "pcon", by.x = "pcon.code") %>%
   sf::st_transform(., 27700) %>%
@@ -178,6 +179,10 @@ background <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncon
 group_outlines <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "2 Group outlines") %>%
   filter(RegionNati != "Northern Ireland")
 
+map_labels <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "1 Group names") %>%
+  filter(RegionNati != "Northern Ireland")
+
+# plot map
 labs <- c("Like Labour", "Like Starmer")
 names(labs) <- c("likeLabour", "likeStarmer")
 
