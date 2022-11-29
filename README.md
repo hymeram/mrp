@@ -14,15 +14,9 @@ The following examples show some of my implementations of MRP to investigate soc
 
 How popular is Keir Starmer and where in the UK is he an electoral asset? The following example uses MRP on the latest British Election Study wave to measure his likeability by constituency and contrasts it with the likeability of the Labour Party more broadly.
 
-The map below contrasts Keir's likeability with that of the Labour Party more generally, also estimated using MRP. Both Keir and Labour more broadly are more popular in urban areas, although Labour is more popular in Labour heartlands including the North of England, South Wales, and the Central Belt of Scotland.
+To take a better look at where Starmer outperforms and underperforms Labour the map below shows areas where Starmer underperforms in green and where Starmer outperforms Labour in purple. Starmer appears to be an electoral asset outside of traditional Labour's territory, outperforming Labour in the rural constituencies of the South of England - the Conservative's so called 'Blue Wall'.
 
-![](starmer_likeability_mrp/Labour_Starmer_Likeability_Comparison.png)
-
-To take a better look at where Starmer outperforms and underperforms Labour the map below shows areas where Starmer underperforms in green and where Starmer outperforms Labour in purple.
-
-Starmer appears to be an electoral asset outside of traditional Labour's territory, outperforming Labour in the rural constituencies of the South of England - the Conservative's so called 'Blue Wall'.
-
-In traditional Labour areas, Starmer is less popular than Labour more broadly, this is especially true in the North West where Starmer is significantly less popular than Labour. Discerningly for Labour, in a lot of the target 'Red Wall' seats Starmer also is a potential electoral liability.
+In traditional Labour areas, Starmer is less popular than the Labour Party, this is especially true in the North West where Starmer is significantly less popular than Labour. Discerningly for Labour, in a lot of the target 'Red Wall' seats Starmer also is a potential electoral liability.
 
 <img src="starmer_likeability_mrp/Labour_Starmer_Net_Likeability.png" width="551"/>
 

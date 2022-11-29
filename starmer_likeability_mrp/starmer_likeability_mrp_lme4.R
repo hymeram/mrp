@@ -262,7 +262,7 @@ hex_map_age <- ggplot(hex) +
     palette = "PiYG",
     limits = c(-1.5,1.5)) +
   labs(
-    title = "Relationship between age and Keir Starmer's popularity in\nrelation to Labour's by constituency?",
+    title = "Relationship between age and Keir Starmer's popularity in relation to Labour's by constituency?",
     subtitle = "Constituency estimates modelled using Multilevel Regression and Poststratification",
     caption = "Hexmap created by the House of Commons Library:\nhttps://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous") +
   theme(plot.title = element_text(size = 14, face = "bold"),
