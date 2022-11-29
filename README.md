@@ -16,7 +16,7 @@ How popular is Keir Starmer and where in the UK is he an electoral asset? The fo
 
 The map below contrasts Keir's likeability with that of the Labour Party more generally, also estimated using MRP. Both Keir and Labour more broadly are more popular in urban areas, although Labour is more popular in Labour heartlands including the North of England, South Wales, and the Central Belt of Scotland.
 
-<img src="starmer_likeability_mrp/Labour_Starmer_Likeability_Comparison.png" width="702"/>
+![](starmer_likeability_mrp/Labour_Starmer_Likeability_Comparison.png)
 
 To take a better look at where Starmer outperforms and underperforms Labour the map below shows areas where Starmer underperforms in green and where Starmer outperforms Labour in purple.
 

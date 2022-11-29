@@ -182,7 +182,7 @@ group_outlines <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-no
 map_labels <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "1 Group names") %>%
   filter(RegionNati != "Northern Ireland")
 
-# plot map
+# plot maps
 labs <- c("Like Labour", "Like Starmer")
 names(labs) <- c("likeLabour", "likeStarmer")
 
@@ -202,17 +202,17 @@ map <- ggplot(shapefile) +
     high = "red3",
     midpoint = mean(shapefile$value),
     name = "Likeability of Labour\n& Starmer (0-10)") +
-  theme(strip.text = element_text(size = 12, face = "bold"),
+  theme(strip.text = element_text(size = 14, face = "bold"),
         plot.title = element_text(size = 14, face = "bold"),
         axis.ticks = element_blank(),
         axis.text = element_blank(),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
+        panel.grid.minor = element_blank(),
+        text=element_text(family="Lato"))
 
-ggsave("Labour_Starmer_Likeability_Comparison.png", map, dpi=300, height=12, width=14)
+ggsave("Labour_Starmer_Likeability_Comparison.png", map, dpi=300, height=8, width=12)
 
 # where is Kier an asset?
-
 hex <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "4 Constituencies") %>%
   merge(mrp_estimates, by.y = "pcon", by.x = "pcon.code")
 
@@ -229,18 +229,17 @@ hex_map <- ggplot(hex) +
     title = "Where is Keir Starmer more popular than Labour as a whole?",
     subtitle = "Constituency estimates modelled using Multilevel Regression and Poststratification",
     caption = "Hexmap created by the House of Commons Library:\nhttps://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous") +
-  theme(plot.title = element_text(size = 14, face = "bold"),
+  theme(plot.title = element_text(face = "bold"),
         axis.ticks = element_blank(),
         axis.text = element_blank(),
         panel.background = element_rect(fill = "white", colour = "white"),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
+        panel.grid.minor = element_blank(),
+        text=element_text(family="Lato"))
 
 ggsave("Labour_Starmer_Net_Likeability.png", hex_map, dpi=300, height=10, width=8,bg="white")
 
-
 # breakdown support by age
-
 subgroup_mrp_estimates <- psf %>%
   group_by(country, Winner19, ConstituencyName, pcon, age0) %>%
   mutate(weight2 = weight/sum(weight)) %>%
@@ -271,6 +270,7 @@ hex_map_age <- ggplot(hex) +
         axis.text = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        strip.text = element_text(size = 12, face = "bold"))
+        strip.text = element_text(size = 12, face = "bold"),
+        text=element_text(family="Lato"))
 
-ggsave("Labour_Starmer_Net_Likeability_By_Age.png", hex_map_age, dpi=300, height=14, width=10,bg="white")
+ggsave("Labour_Starmer_Net_Likeability_By_Age.png", hex_map_age, dpi=300, height=16, width=12,bg="white")
