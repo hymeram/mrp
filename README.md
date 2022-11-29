@@ -14,15 +14,15 @@ The following examples show some of my implementations of MRP to investigate soc
 
 How popular is Keir Starmer and where in the UK is he an electoral asset? The following example uses MRP on the latest British Election Study wave to measure his likeability by constituency and contrasts it with the likeability of the Labour Party more broadly.
 
-To take a better look at where Starmer outperforms and underperforms Labour the map below shows areas where Starmer underperforms in green and where Starmer outperforms Labour in purple. Starmer appears to be an electoral asset outside of traditional Labour's territory, outperforming Labour in the rural constituencies of the South of England - the Conservative's so called 'Blue Wall'.
+To take a better look at where Starmer outperforms and underperforms Labour the map below shows areas where Starmer is more/less popular than the Labour Party. Starmer appears to be an electoral asset to Labour in areas outside of traditional Labour's territory, i.e. the rural South of England.
 
-In traditional Labour areas, Starmer is less popular than the Labour Party, this is especially true in the North West where Starmer is significantly less popular than Labour. Discerningly for Labour, in a lot of the target 'Red Wall' seats Starmer also is a potential electoral liability.
+In Labour heatlands, Starmer is less popular than the Labour Party, this is especially true in the North West, the part of the UK where Starmer is least liked. Disconcertingly for Labour, in a lot of the target 'Red Wall' seats Starmer also appears less popular than the Labour Party as an organisation, potentially hindering Labour performance in this part of the UK.
 
-<img src="starmer_likeability_mrp/Labour_Starmer_Net_Likeability.png" width="551"/>
+![](starmer_likeability_mrp/Maps/Labour_Starmer_Net_Likeability.png)
 
-Differences in attitudes towards Labour and Starmer by age are dramatic. Especially among those under 30, Starmer is far less popular than Labour as a whole in nearly every constituency. When age reaches the above 60 categories the trend reverses and Starmer is generally more popular then the Labour Party as a whole.
+Differences in attitudes towards Labour and Starmer by age are dramatic. Especially among those under 30, Starmer is substantially less liked than Labour as a whole in nearly every constituency. When age reaches over 60, Starmer is generally more popular then the Labour Party as a whole apart from in a few areas of the UK (including much of North West England).
 
-![](starmer_likeability_mrp/Labour_Starmer_Net_Likeability_By_Age.png)
+![](starmer_likeability_mrp/Maps/Labour_Starmer_Net_Likeability_By_Age.png)
 
 ## Useful links:
 
