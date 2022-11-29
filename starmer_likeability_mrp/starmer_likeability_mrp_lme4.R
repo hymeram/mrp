@@ -210,7 +210,7 @@ map <- ggplot(shapefile) +
         panel.grid.minor = element_blank(),
         text=element_text(family="Lato"))
 
-ggsave("Labour_Starmer_Likeability_Comparison.png", map, dpi=300, height=8, width=12)
+ggsave("Maps/Labour_Starmer_Likeability_Comparison.png", map, dpi=300, height=8, width=12)
 
 # where is Kier an asset?
 hex <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "4 Constituencies") %>%
@@ -237,7 +237,7 @@ hex_map <- ggplot(hex) +
         panel.grid.minor = element_blank(),
         text=element_text(family="Lato"))
 
-ggsave("Labour_Starmer_Net_Likeability.png", hex_map, dpi=300, height=10, width=8,bg="white")
+ggsave("Maps/Labour_Starmer_Net_Likeability.png", hex_map, dpi=300, height=10, width=8,bg="white")
 
 # breakdown support by age
 subgroup_mrp_estimates <- psf %>%
@@ -273,4 +273,4 @@ hex_map_age <- ggplot(hex) +
         strip.text = element_text(size = 12, face = "bold"),
         text=element_text(family="Lato"))
 
-ggsave("Labour_Starmer_Net_Likeability_By_Age.png", hex_map_age, dpi=300, height=16, width=12,bg="white")
+ggsave("Maps/Labour_Starmer_Net_Likeability_By_Age.png", hex_map_age, dpi=300, height=16, width=12,bg="white")
