@@ -14,7 +14,7 @@ setwd("starmer_likeability_mrp")
 # this is Wave 23 of the British Election Study panel available to download here: 
 # https://www.britishelectionstudy.com/data-objects/panel-study-data/ 
 
-bes_location <- "C:/Users/Alex/Documents/Data/BES2019_W23_v23.0.dta"
+bes_location <- "~/Data/BES2019_W23_v23.0.dta"
 bes <- haven::read_dta(bes_location)
 
 # import constituency level predictors from BES
@@ -44,7 +44,7 @@ aux <- readxl::read_excel(temp) %>%
 # this frame was created by Professor Chris Hanretty and is available to download here: 
 # https://journals.sagepub.com/doi/10.1177/1478929919864773#supplementary-materials 
 
-psf_location <- "C:/Users/Alex/Documents/Data/hlv_psw.csv"
+psf_location <- "~/Data/hlv_psw.csv"
 psf <- read.csv(psf_location, stringsAsFactors = FALSE)
 
 # clean data to match psf ------------------------------------------------------
