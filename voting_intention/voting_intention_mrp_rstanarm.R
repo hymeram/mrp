@@ -96,14 +96,12 @@ df <- bes_clean %>%
 options(mc.cores = 4)
 
 # Like Starmer
-starmer_model <-  rstanarm::stan_glmer(
+starmer_model <-  rstanarm::stan_lmer(
   'likeStarmer ~ 
   (1|pcon) + 
   (1|gor) +
   (1|age0) + 
-  (1|age0:sex) + 
   (1|education) + 
-  (1|education:age0) + 
   (1|hrsocgrd) + 
   sex +
   housing +
@@ -116,6 +114,7 @@ starmer_model <-  rstanarm::stan_glmer(
   data = df,
   chains = 2,
   iter = 1000,
+  refresh = 1,
   prior_intercept = rstanarm::student_t(5, 0, 10, autoscale = FALSE),
   prior = rstanarm::student_t(5, 0, 2.5, autoscale = FALSE),
   QR = TRUE
@@ -124,13 +123,12 @@ summary(starmer_model)
 mean(rstanarm::bayes_R2(starmer_model))
 
 # Like Labour
-labour_model <-  rstanarm::stan_glmer(
+labour_model <-  rstanarm::stan_lmer(
   'likeLab ~ 
   (1|pcon) + 
   (1|gor) +
   (1|age0) + 
   (1|education) + 
-  (1|age0:education) + 
   (1|hrsocgrd) + 
   sex +
   housing +
@@ -141,6 +139,7 @@ labour_model <-  rstanarm::stan_glmer(
   c11EthnicityWhiteBritish',
   data = df,
   chains = 2,
+  refresh = 1,
   iter = 1000,
   prior_intercept = rstanarm::student_t(5, 0, 10, autoscale = FALSE),
   prior = rstanarm::student_t(5, 0, 2.5, autoscale = FALSE),

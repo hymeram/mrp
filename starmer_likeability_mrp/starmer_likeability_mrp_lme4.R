@@ -2,6 +2,7 @@
 library(haven)
 library(tidyverse)
 library(lme4)
+library(curl)
 library(sf)
 library(scico)
 options(scipen = 999)
@@ -17,8 +18,10 @@ bes_location <- "C:/Users/Alex/Documents/Data/BES2019_W23_v23.0.dta"
 bes <- haven::read_dta(bes_location)
 
 # import constituency level predictors from BES
-aux_location <- "C:/Users/Alex/Documents/Data/BES-2019-General-Election-results-file-v1.1.xlsx"
-aux <- readxl::read_excel(aux_location) %>%
+temp <- tempfile()
+source <- "https://www.britishelectionstudy.com/wp-content/uploads/2022/01/BES-2019-General-Election-results-file-v1.1.xlsx"
+temp <- curl::curl_download(url=source, destfile=temp, quiet=FALSE, mode="wb")
+aux <- readxl::read_excel(temp) %>%
   select(
     ConstituencyName,
     pano,
@@ -100,9 +103,7 @@ starmer_model <-  lme4::lmer(
   (1|pcon) + 
   (1|gor) +
   (1|age0) + 
-  (1|age0:sex) + 
   (1|education) + 
-  (1|education:age0) + 
   (1|hrsocgrd) + 
   sex +
   housing +
@@ -115,8 +116,6 @@ starmer_model <-  lme4::lmer(
   data = df
   )
 
-summary(starmer_model)
-
 # Like Labour
 labour_model <-  lme4::lmer(
   'likeLab ~ 
@@ -124,7 +123,6 @@ labour_model <-  lme4::lmer(
   (1|gor) +
   (1|age0) + 
   (1|education) + 
-  (1|age0:education) + 
   (1|hrsocgrd) + 
   sex +
   housing +
@@ -135,13 +133,6 @@ labour_model <-  lme4::lmer(
   c11EthnicityWhiteBritish',
   data = df
 )
-
-# model outputs
-summary(labour_model)
-plot(labour_model)
-ranef(labour_model)
-sjPlot::plot_model(labour_model, "re")
-sjPlot::plot_model(labour_model, "est")
 
 # poststratification -----------------------------------------------------------
 
@@ -164,25 +155,25 @@ mrp_estimates <- psf %>%
 
 # display data -----------------------------------------------------------------
 
-# contrast likeability of Labour and Starmer
-# shapefile from: https://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous
-
-# import geographic data
-shapefile <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "4 Constituencies") %>%
+# hex map from house of commons library 
+temp <- tempfile()
+source <- "https://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous/raw/main/geopackages/Constituencies.gpkg"
+temp <- curl::curl_download(url=source, destfile=temp, quiet=FALSE, mode="wb")
+shapefile <- sf::st_read(temp, layer = "4 Constituencies") %>%
   merge(mrp_estimates, by.y = "pcon", by.x = "pcon.code") %>%
   sf::st_transform(., 27700) %>%
   pivot_longer(., cols = c(likeLabour, likeStarmer))
   
-background <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "5 Background") %>%
+background <- sf::st_read(temp,layer = "5 Background") %>%
   filter(Name != "Ireland")
 
-group_outlines <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "2 Group outlines") %>%
+group_outlines <- sf::st_read(temp,layer = "2 Group outlines") %>%
   filter(RegionNati != "Northern Ireland")
 
-map_labels <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "1 Group names") %>%
+map_labels <- sf::st_read(temp,layer = "1 Group names") %>%
   filter(RegionNati != "Northern Ireland")
 
-# plot maps
+# plot like labour and like starmer maps
 labs <- c("Like Labour", "Like Starmer")
 names(labs) <- c("likeLabour", "likeStarmer")
 
@@ -194,8 +185,7 @@ map <- ggplot(shapefile) +
   facet_wrap(~name, labeller = labeller(name = labs)) +
   labs(title = "Comparison of the likeability of Labour and Keir Starmer",
        subtitle = "Constituency estimates modelled using Multilevel Regression and Poststratification",
-       caption = "Please note the midpoint of the colour scale is not set to 5\n
-       Hexmap created by the House of Commons Library:\nhttps://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous") +
+       caption = "Please note the midpoint of the colour scale is not set to 5\nHexmap created by the House of Commons Library") +
   scale_fill_gradient2(
     low = "royalblue1", 
     mid = "gray85",
@@ -213,7 +203,7 @@ map <- ggplot(shapefile) +
 ggsave("Maps/Labour_Starmer_Likeability_Comparison.png", map, dpi=300, height=8, width=12)
 
 # where is Kier an asset?
-hex <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "4 Constituencies") %>%
+hex <- sf::st_read(temp, layer = "4 Constituencies") %>%
   merge(mrp_estimates, by.y = "pcon", by.x = "pcon.code")
 
 hex_map <- ggplot(hex) +
@@ -228,7 +218,7 @@ hex_map <- ggplot(hex) +
   labs(
     title = "Where is Keir Starmer more popular than Labour as a whole?",
     subtitle = "Constituency estimates modelled using Multilevel Regression and Poststratification",
-    caption = "Hexmap created by the House of Commons Library:\nhttps://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous") +
+    caption = "Hexmap created by the House of Commons Library") +
   theme(plot.title = element_text(face = "bold"),
         axis.ticks = element_blank(),
         axis.text = element_blank(),
@@ -248,7 +238,7 @@ subgroup_mrp_estimates <- psf %>%
             likeability_diff = sum(likeability_diff*weight2, na.rm=T),
             weight = sum(weight))
 
-hex <- sf::st_read('C:/Users/Alex/Documents/Data/uk-hex-cartograms-noncontiguous-main/geopackages/Constituencies.gpkg',layer = "4 Constituencies") %>%
+hex <- sf::st_read(temp ,layer = "4 Constituencies") %>%
   merge(subgroup_mrp_estimates, by.y = "pcon", by.x = "pcon.code")
 
 hex_map_age <- ggplot(hex) +
@@ -264,7 +254,7 @@ hex_map_age <- ggplot(hex) +
   labs(
     title = "Relationship between age and Keir Starmer's popularity in relation to Labour's by constituency?",
     subtitle = "Constituency estimates modelled using Multilevel Regression and Poststratification",
-    caption = "Hexmap created by the House of Commons Library:\nhttps://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous") +
+    caption = "Hexmap created by the House of Commons Library") +
   theme(plot.title = element_text(size = 14, face = "bold"),
         axis.ticks = element_blank(),
         axis.text = element_blank(),
