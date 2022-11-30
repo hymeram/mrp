@@ -1,3 +1,5 @@
+############# Keir Starmer Likeability MRP #####################################
+
 # libraries --------------------------------------------------------------------
 library(haven)
 library(tidyverse)
@@ -42,7 +44,7 @@ aux <- readxl::read_excel(temp) %>%
 # import poststratification frame ----------------------------------------------
 
 # this frame was created by Professor Chris Hanretty and is available to download here: 
-# https://journals.sagepub.com/doi/10.1177/1478929919864773#supplementary-materials 
+# "https://journals.sagepub.com/doi/suppl/10.1177/1478929919864773/suppl_file/hlv_psw.csv"
 
 psf_location <- "~/Data/hlv_psw.csv"
 psf <- read.csv(psf_location, stringsAsFactors = FALSE)
@@ -51,8 +53,7 @@ psf <- read.csv(psf_location, stringsAsFactors = FALSE)
 
 bes_clean <- bes %>%
   select(likeStarmer, likeLab, gor,pano,pcon,gender,age,p_housing,p_education,p_socgrade) %>%
-  mutate(likeStarmer = as.integer(likeStarmer),
-         likeLab = as.integer(likeLab)) %>%
+  mutate(likeStarmer = as.integer(likeStarmer),likeLab = as.integer(likeLab)) %>%
   na_if(9999) %>%
   as_factor()
 

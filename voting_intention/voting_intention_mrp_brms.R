@@ -1,23 +1,29 @@
+##################### Voting intention MRP #####################################
+
+# libraries --------------------------------------------------------------------
 library(haven)
 library(sf)
+library(curl)
 library(tidyverse)
-library(rstanarm)
+library(brms)
 library(bayesplot)
 library(doParallel)
 options(scipen = 999)
-setwd("starmer_likeability_mrp")
+setwd("voting_intention")
 
 # import british election study data -------------------------------------------
 
 # this is Wave 23 of the British Election Study panel available to download here: 
 # https://www.britishelectionstudy.com/data-objects/panel-study-data/ 
 
-bes_location <- "C:/Users/Alex/Documents/Data/BES2019_W23_v23.0.dta"
+bes_location <- "~/Data/BES2019_W23_v23.0.dta"
 bes <- haven::read_dta(bes_location)
 
 # import constituency level predictors from BES
-aux_location <- "C:/Users/Alex/Documents/Data/BES-2019-General-Election-results-file-v1.1.xlsx"
-aux <- readxl::read_excel(aux_location) %>%
+temp <- tempfile()
+source <- "https://www.britishelectionstudy.com/wp-content/uploads/2022/01/BES-2019-General-Election-results-file-v1.1.xlsx"
+temp <- curl::curl_download(url=source, destfile=temp, quiet=FALSE, mode="wb")
+aux <- readxl::read_excel(temp) %>%
   select(
     ConstituencyName,
     pano,
@@ -26,29 +32,28 @@ aux <- readxl::read_excel(aux_location) %>%
     Region,
     Winner19,
     Con19,
-    Lab15,
     Lab19,
     LD19,
+    Green19,
+    SNP19,
+    PC19,
     leaveHanretty,
-    c11EthnicityWhiteBritish,
-    c11Retired,
-    c11DeprivedNone) %>%
+    Turnout19) %>%
   replace(is.na(.), 0)
 
 # import poststratification frame ----------------------------------------------
 
 # this frame was created by Professor Chris Hanretty and is available to download here: 
-# https://journals.sagepub.com/doi/10.1177/1478929919864773#supplementary-materials 
+# "https://journals.sagepub.com/doi/suppl/10.1177/1478929919864773/suppl_file/hlv_psw.csv"
 
-psf_location <- "C:/Users/Alex/Documents/Data/hlv_psw.csv"
+psf_location <- "~/Data/hlv_psw.csv"
 psf <- read.csv(psf_location, stringsAsFactors = FALSE)
 
 # clean data to match psf ------------------------------------------------------
 
 bes_clean <- bes %>%
-  select(likeStarmer, likeLab, gor,pano,pcon,gender,age,p_housing,p_education,p_socgrade) %>%
-  mutate(likeStarmer = as.integer(likeStarmer),
-         likeLab = as.integer(likeLab)) %>%
+  select(turnoutUKGeneral, generalElectionVote, gor,pano,pcon,gender,age,p_housing,p_education,p_socgrade) %>%
+  mutate(turnoutUKGeneral = as.integer(turnoutUKGeneral)) %>%
   na_if(9999) %>%
   as_factor()
 
@@ -84,20 +89,30 @@ bes_clean <- bes_clean %>%
       TRUE ~ NA_character_),
     age0 = cut(as.numeric(age), 
                breaks=c(-Inf, 19, 24, 29, 44, 59, 64, 74, Inf), 
-               labels=c("16-19","20-24","25-29","30-44","45-59","60-64","65-74","75+"))) %>%
-  select(-age,-p_housing,-p_education,-p_socgrade) 
+               labels=c("16-19","20-24","25-29","30-44","45-59","60-64","65-74","75+")),
+    vote_intention = case_when(
+      generalElectionVote == "I would/did not vote" ~ "Wouldn't vote",
+      generalElectionVote == "Conservative" ~ "Conservative",
+      generalElectionVote == "Labour" ~ "Labour",
+      generalElectionVote == "Liberal Democrat" ~ "Liberal Democrat",
+      generalElectionVote == "Scottish National Party (SNP)" ~ "SNP",
+      generalElectionVote == "Plaid Cymru" ~ "Plaid Cymru",
+      generalElectionVote == "Green Party" ~ "Green Party",
+      generalElectionVote == "Don't know" ~ NA_character_, # remove don't know
+      TRUE ~ "Other")
+    ) %>%
+  select(-age,-p_housing,-p_education,-p_socgrade,-generalElectionVote) 
 
 # merge with aux data 
 df <- bes_clean %>%
   merge(aux, by="pano")
 
 # build models -----------------------------------------------------------------
-
 options(mc.cores = 4)
 
 # Like Starmer
-starmer_model <-  rstanarm::stan_lmer(
-  'likeStarmer ~ 
+voting_intention_model <- brm(
+  'vote_intention ~ 
   (1|pcon) + 
   (1|gor) +
   (1|age0) + 
@@ -105,50 +120,20 @@ starmer_model <-  rstanarm::stan_lmer(
   (1|hrsocgrd) + 
   sex +
   housing +
-  Lab15 + 
+  Lab19 + 
   LD19 +
-  leaveHanretty +
-  c11DeprivedNone +
-  c11Retired +
-  c11EthnicityWhiteBritish',
-  data = df,
-  chains = 2,
-  iter = 1000,
-  refresh = 1,
-  prior_intercept = rstanarm::student_t(5, 0, 10, autoscale = FALSE),
-  prior = rstanarm::student_t(5, 0, 2.5, autoscale = FALSE),
-  QR = TRUE
-)
-summary(starmer_model)
-mean(rstanarm::bayes_R2(starmer_model))
-
-# Like Labour
-labour_model <-  rstanarm::stan_lmer(
-  'likeLab ~ 
-  (1|pcon) + 
-  (1|gor) +
-  (1|age0) + 
-  (1|education) + 
-  (1|hrsocgrd) + 
-  sex +
-  housing +
-  Lab15 + 
-  leaveHanretty +
-  c11DeprivedNone +
-  c11Retired +
-  c11EthnicityWhiteBritish',
+  Con19 +
+  Green19 +
+  SNP19 +
+  PC19 +
+  leaveHanretty',
+  family = categorical(),
   data = df,
   chains = 2,
   refresh = 1,
-  iter = 1000,
-  prior_intercept = rstanarm::student_t(5, 0, 10, autoscale = FALSE),
-  prior = rstanarm::student_t(5, 0, 2.5, autoscale = FALSE),
-  QR = TRUE
+  iter = 500,
 )
-
-# model outputs
-summary(labour_model)
-mean(rstanarm::bayes_R2(labour_model))
+summary(voting_intention_model)
 
 # poststratification -----------------------------------------------------------
 
