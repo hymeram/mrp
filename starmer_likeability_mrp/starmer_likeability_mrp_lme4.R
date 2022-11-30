@@ -95,7 +95,7 @@ bes_clean <- bes_clean %>%
 df <- bes_clean %>%
   merge(aux, by="pano")
 
-# build model ------------------------------------------------------------------
+# build mixed models -----------------------------------------------------------
 
 # Like Starmer
 starmer_model <-  lme4::lmer(
@@ -159,18 +159,19 @@ mrp_estimates <- psf %>%
 temp <- tempfile()
 source <- "https://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous/raw/main/geopackages/Constituencies.gpkg"
 temp <- curl::curl_download(url=source, destfile=temp, quiet=FALSE, mode="wb")
+
+# constituency layer of map
 shapefile <- sf::st_read(temp, layer = "4 Constituencies") %>%
   merge(mrp_estimates, by.y = "pcon", by.x = "pcon.code") %>%
   sf::st_transform(., 27700) %>%
   pivot_longer(., cols = c(likeLabour, likeStarmer))
-  
+
+# background layer of map
 background <- sf::st_read(temp,layer = "5 Background") %>%
   filter(Name != "Ireland")
 
+# outlines layer of map
 group_outlines <- sf::st_read(temp,layer = "2 Group outlines") %>%
-  filter(RegionNati != "Northern Ireland")
-
-map_labels <- sf::st_read(temp,layer = "1 Group names") %>%
   filter(RegionNati != "Northern Ireland")
 
 # plot like labour and like starmer maps
