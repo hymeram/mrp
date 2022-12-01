@@ -107,10 +107,8 @@ bes_clean <- bes_clean %>%
 df <- bes_clean %>%
   merge(aux, by="pano")
 
-# build models -----------------------------------------------------------------
+# voting intention model -------------------------------------------------------
 options(mc.cores = 4)
-
-# Like Starmer
 voting_intention_model <- brm(
   'vote_intention ~ 
   (1|pcon) + 
@@ -137,56 +135,4 @@ summary(voting_intention_model)
 
 # poststratification -----------------------------------------------------------
 
-# poststratification function
-postsratify <- function(i, psf, starmer_model, labour_model){
-  aoi <- levels(as.factor(psf$pcon))[i]
-  psf_area <- psf[psf$pcon == aoi, ]
-  # get like starmer prediction
-  posterior_prob_starmer <- posterior_epred(
-    starmer_model,
-    draws = 500,
-    newdata = as.data.frame(psf_area))
-  poststrat_prob_starmer <- posterior_prob_starmer %*% psf_area$weight
-  # get like labour prediction
-  posterior_prob_labour <- posterior_epred(
-    labour_model,
-    draws = 500,
-    newdata = as.data.frame(psf_area))
-  poststrat_prob_labour <- posterior_prob_labour %*% psf_area$weight
-  # starmer_v_labour
-  poststrat_prob_net <- poststrat_prob_starmer - poststrat_prob_labour
-  return(data.frame(
-    aoi, 
-    mean(poststrat_prob_starmer), 
-    sd(poststrat_prob_starmer),
-    mean(poststrat_prob_labour),
-    sd(poststrat_prob_labour),
-    mean(poststrat_prob_net),
-    sd(poststrat_prob_net),
-    ))
-}
-
-# match psf to model
-psf <- psf %>%
-  merge(aux, by.x="GSSCode", by.y="ONSConstID") %>%
-  rename(c(country = Country, pcon = GSSCode, gor = Region))
-
-# run poststratification function using multi core 
-doParallel::registerDoParallel(cores = 4)
-results <- foreach::foreach(
-  i = 1:length(levels(as.factor(psf$area))), 
-  .combine=rbind,
-  .inorder = FALSE,
-  .packages = c("rstanarm", "dplyr")) %dopar%
-  postsratify(i, psf, starmer_model, labour_model)
-
-# rename cols
-colnames(results) <- c(
-  "area", 
-  "starmer_estimate", 
-  "starmer_SD",
-  "labour_estimate",
-  "labour_SD",
-  "net_estimate",
-  "net_SD"
-  )
+# turnout model ----------------------------------------------------------------
