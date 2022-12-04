@@ -1,3 +1,3 @@
-## Estimating constituency level voting intention using MRP
+## Estimating voting intention at a constituency level using MRP
 
 Work in Progress ...

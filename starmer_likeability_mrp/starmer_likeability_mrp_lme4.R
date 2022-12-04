@@ -161,19 +161,24 @@ temp <- tempfile()
 source <- "https://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous/raw/main/geopackages/Constituencies.gpkg"
 temp <- curl::curl_download(url=source, destfile=temp, quiet=FALSE, mode="wb")
 
-# constituency layer of map
 shapefile <- sf::st_read(temp, layer = "4 Constituencies") %>%
   merge(mrp_estimates, by.y = "pcon", by.x = "pcon.code") %>%
   sf::st_transform(., 27700) %>%
   pivot_longer(., cols = c(likeLabour, likeStarmer))
 
-# background layer of map
 background <- sf::st_read(temp,layer = "5 Background") %>%
   filter(Name != "Ireland")
 
-# outlines layer of map
 group_outlines <- sf::st_read(temp,layer = "2 Group outlines") %>%
   filter(RegionNati != "Northern Ireland")
+
+city_oulines <- st_read(temp, layer="3 City outlines") %>% 
+  filter(RegionNati != "Northern Ireland") 
+
+group_labels <- st_read(temp, layer="1 Group names") %>% 
+  mutate(just=if_else(LabelPosit=="Left", 0, 1)) %>%
+  filter(RegionNati != "Northern Ireland") 
+
 
 # plot like labour and like starmer maps
 labs <- c("Like Labour", "Like Starmer")
@@ -182,7 +187,9 @@ names(labs) <- c("likeLabour", "likeStarmer")
 map <- ggplot(shapefile) +
   geom_sf(data=background, fill="grey", colour = "white", size = NA) +
   geom_sf(aes(fill=value), colour = "white", size = NA) + 
+  geom_sf(data=city_oulines, fill=NA, colour = "grey", size = .5) +
   geom_sf(data=group_outlines, fill=NA, colour = "black", size = .5) +
+  geom_sf_text(data=group_labels, aes(label=Group.labe, hjust=just), size=2,colour="black") +
   theme_bw() +
   facet_wrap(~name, labeller = labeller(name = labs)) +
   labs(title = "Comparison of the likeability of Labour and Keir Starmer",
@@ -211,7 +218,9 @@ hex <- sf::st_read(temp, layer = "4 Constituencies") %>%
 hex_map <- ggplot(hex) +
   geom_sf(data=background, fill="grey", colour = "white", size = NA) +
   geom_sf(aes(fill=likeability_diff), colour = "white", size = NA) +
+  geom_sf(data=city_oulines, fill=NA, colour = "grey", size = .5) +
   geom_sf(data=group_outlines, fill=NA, colour = "black", size = .5) +
+  geom_sf_text(data=group_labels, aes(label=Group.labe, hjust=just), size=2,colour="black") +
   theme_void() +
   scale_fill_distiller(
     name = "Starmer more/less\nlikeable than Labour\nas a whole",
@@ -246,6 +255,7 @@ hex <- sf::st_read(temp ,layer = "4 Constituencies") %>%
 hex_map_age <- ggplot(hex) +
   geom_sf(data=background, fill="grey", colour = "white", size = NA) +
   geom_sf(aes(fill=likeability_diff), colour = "white", size = NA) +
+  geom_sf(data=city_oulines, fill=NA, colour = "grey", size = .5) +
   geom_sf(data=group_outlines, fill=NA, colour = "black", size = .5) +
   facet_wrap(~age0) +
   theme_bw() +
