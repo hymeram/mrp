@@ -26,6 +26,8 @@ Differences in attitudes towards Labour and Starmer by age are dramatic. Especia
 
 ## [Example 2: Estimating constituency voting intention using MRP](https://github.com/hymeram/mrp/tree/main/voting_intention)
 
+#### MRP Seat Estimates of BES Voting Intention (May 2022)
+
 | Party                  | Vote Intention (%) [95% CI] | MRP Seat Estimate |
 |------------------------|-----------------------------|-------------------|
 | Labour                 | 28.2 [27.6 - 28.8]          | 222               |
