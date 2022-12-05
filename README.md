@@ -10,7 +10,7 @@ Secondly, MRP is used for small area estimation. In 2017, [YouGov introduced MRP
 
 The following examples show some of my experiments with MRP to investigate social and political questions that I find interesting.
 
-## [Example 1: Where is Keir Starmer's an electoral asset to Labour?](https://github.com/hymeram/mrp/tree/main/starmer_likeability_mrp)
+## [Example 1: Where is Keir Starmer an electoral asset to Labour?](https://github.com/hymeram/mrp/tree/main/starmer_likeability_mrp)
 
 How popular is Keir Starmer and where in the UK is he an electoral asset? The following example uses MRP on the latest British Election Study wave to measure his likeability by constituency and contrasts it with the likeability of the Labour Party more broadly.
 

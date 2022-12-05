@@ -33,11 +33,6 @@ aux <- readxl::read_excel(temp) %>%
     ONSConstID,
     Country,
     Region,
-    Winner19,
-    Winner17,
-    Winner15,
-    Winner10,
-    Winner05,
     Con19,
     Lab19,
     LD19,
@@ -123,6 +118,7 @@ voting_intention_model <- brm(
   (1|gor) +
   (1|age0) + 
   (1|education) + 
+  (1|age0:education) + 
   (1|hrsocgrd) + 
   sex +
   housing +
@@ -133,23 +129,19 @@ voting_intention_model <- brm(
   SNP19 +
   PC19 +
   Turnout19 +
-  leaveHanretty +
-  Winner17 +
-  Winner15 + 
-  Winner10 +
-  Winner05',
+  leaveHanretty',
   family = categorical(),
   data = df,
   prior = 
-    prior(student_t(5, 0, 2.5), class = "b") +
-    prior(student_t(5, 0, 2.5), class = "sd") +
-    prior(student_t(5, 0, 2.5), class = "Intercept"),
+    prior(normal(0, 5), class = "b") +
+    prior(normal(0,5), class = "Intercept"),
   chains = 2,
   cores = 2,
   threads = threading(2),
   refresh = 1,
   backend = "cmdstanr",
   iter = 700,
+  control = list(adapt_delta = 0.9, max_treedepth = 10)
 )
 
 saveRDS(voting_intention_model, "Models/voting_intention_model.RDS")
@@ -161,7 +153,7 @@ pp_check(voting_intention_model)
 
 # poststratification -----------------------------------------------------------
 
-voting_intention_model <- readRDS("Models/voting_intention_model.RDS")
+#voting_intention_model <- readRDS("Models/voting_intention_model.RDS")
 
 # match psf variables to model for prediction
 post_vars <- bes_clean %>%
@@ -200,6 +192,7 @@ final_pred <- combined_pred %>%
     `Scottish National Party` = sum(vote_intention.P.Y...SNP. * weight),
     `Plaid Cymru` = sum(vote_intention.P.Y...Plaid.Cymru. * weight),
     Green = sum(vote_intention.P.Y...Green.Party. * weight),
+    DK = sum(vote_intention.P.Y...Don.t.know. * weight),
     No_Vote = sum(vote_intention.P.Y...Wouldn.t.vote. * weight),
     Other = sum(vote_intention.P.Y...Other. * weight)
   )
@@ -231,7 +224,7 @@ vote_share <- bes %>%
   as_factor() %>%
   as_survey_design(weights = wt)
 
-vote_share <- svymean(~generalElectionVote, vote_share, na.rm=T) %>%
+svymean(~generalElectionVote, vote_share, na.rm=T) %>%
   as.data.frame() %>%
   filter(mean > 0) %>%
   mutate(low = mean-(1.96*SE),
@@ -251,10 +244,6 @@ final_pred %>%
 west_hex_map$GSSCode<- west_hex_map$gss_code
 map.data <- merge(west_hex_map, final_pred, by="GSSCode")
 
-regions <- map.data %>%
-  group_by(region_name) %>%
-  summarise()
-
 # plot
 p1 <- ggplot(data=map.data) +
   geom_sf(aes(fill=results),colour=NA) + 
@@ -267,8 +256,8 @@ p1 <- ggplot(data=map.data) +
     "Conservative Hold" = "deepskyblue",
     "Labour Gain" = "firebrick1",
     "Labour Hold" = "coral",
-    "Scottish National Party Hold" = "gold",
     "SNP Gain" = "darkgoldenrod2",
+    "Scottish National Party Hold" = "gold",
     "Liberal Democrat Hold" = "orange",
     "Green Hold" = "darkgreen",
     "Plaid Cymru Hold" = "lightgreen",
