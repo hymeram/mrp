@@ -158,10 +158,13 @@ summary(turnout_model)
 # this population frame is by Professor Chris Hanretty the original is available here: 
 # "https://journals.sagepub.com/doi/suppl/10.1177/1478929919864773/suppl_file/hlv_psw.csv"
 
+turnout_model <- readRDS("Models/turnout_model.RDS")
+
 psf_location <- "~/Data/hlv_psw.csv"
 psf <- read.csv(psf_location, stringsAsFactors = FALSE) %>%
   merge(aux, by.x="GSSCode", by.y="ONSConstID") %>%
-  rename(gor = Region, Constit_Code = GSSCode)
+  rename(gor = Region, Constit_Code = GSSCode) %>%
+  mutate(year = "2017")
 
 for (i in unique(psf$gor)){
   print(i)
