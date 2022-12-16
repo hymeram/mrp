@@ -215,13 +215,13 @@ combined_pred <- do.call(rbind,lapply(filenames, read.csv))
 final_pred <- combined_pred %>%
   group_by(Constit_Code, pcon, Winner19) %>%
   summarise(
-    Conservative = sum(vote_intention.P.Y...Conservative. * weight),
-    Labour = sum(vote_intention.P.Y...Labour. * weight),
-    `Liberal Democrat` = sum(vote_intention.P.Y...Liberal.Democrat. * weight),
-    `Scottish National Party` = sum(vote_intention.P.Y...SNP. * weight),
-    `Plaid Cymru` = sum(vote_intention.P.Y...Plaid.Cymru. * weight),
-    Green = sum(vote_intention.P.Y...Green.Party. * weight),
-    Other = sum(vote_intention.P.Y...Other. * weight)
+    Conservative = sum(vote_intention.P.Y...Conservative. * (weight*turnout)),
+    Labour = sum(vote_intention.P.Y...Labour. * (weight*turnout)),
+    `Liberal Democrat` = sum(vote_intention.P.Y...Liberal.Democrat. * (weight*turnout)),
+    `Scottish National Party` = sum(vote_intention.P.Y...SNP. * (weight*turnout)),
+    `Plaid Cymru` = sum(vote_intention.P.Y...Plaid.Cymru. * (weight*turnout)),
+    Green = sum(vote_intention.P.Y...Green.Party. * (weight*turnout)),
+    Other = sum(vote_intention.P.Y...Other. * (weight*turnout))
   )
 
 # winner
@@ -269,7 +269,7 @@ final_pred %>%
 
 # visualisation ----------------------------------------------------------------
 west_hex_map$GSSCode<- west_hex_map$gss_code
-map.data <- merge(west_hex_map, final_pred, by="GSSCode")
+map.data <- merge(west_hex_map, final_pred, by.x="GSSCode", by.y="Constit_Code")
 
 # plot
 p1 <- ggplot(data=map.data) +
@@ -285,6 +285,7 @@ p1 <- ggplot(data=map.data) +
     "Labour Hold" = "coral",
     "SNP Gain" = "darkgoldenrod2",
     "Scottish National Party Hold" = "gold",
+    "Liberal Democrat Gain" = "orange3",
     "Liberal Democrat Hold" = "orange",
     "Green Hold" = "darkgreen",
     "Plaid Cymru Hold" = "lightgreen",
