@@ -30,9 +30,9 @@ Differences in attitudes towards Labour and Starmer by age are dramatic. Especia
 
 | Party                  | Vote Intention (%) [95% CI] | MRP Seat Estimate |
 |------------------------|-----------------------------|-------------------|
-| Labour                 | 28.2 [27.6 - 28.8]          | 222               |
-| Conservative           | 22.4 [21.9 - 23.0]          | 341               |
-| SNP                    | 2.9 [2.7 - 3.1]             | 57                |
+| Labour                 | 28.2 [27.6 - 28.8]          | 322               |
+| Conservative           | 22.4 [21.9 - 23.0]          | 240               |
+| SNP                    | 2.9 [2.7 - 3.1]             | 58                |
 | Liberal Democrat       | 7.6 [7.3 - 8.0]             | 7                 |
 | Plaid Cymru            | 0.4 [0.37 - 0.53]           | 2                 |
 | Green Party            | 5.0 [4.7 - 5.2]             | 1                 |
