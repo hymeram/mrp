@@ -10,7 +10,26 @@ Secondly, MRP is used for small area estimation. In 2017, [YouGov introduced MRP
 
 The following examples show some of my experiments with MRP to investigate social and political questions that I find interesting.
 
-## [Example 1: Where is Keir Starmer an electoral asset to Labour?](https://github.com/hymeram/mrp/tree/main/starmer_likeability_mrp)
+## [Example 1: Estimating constituency voting intention using MRP](https://github.com/hymeram/mrp/tree/main/voting_intention)
+
+#### MRP Seat Estimates of BES Voting Intention (May 2022)
+
+| Party            | Weighted Survey Estimate | MRP Estimate | Turnout Adjusted MRP Estimate | MRP Seat Estimate |
+|--------------|---------------|-------------|-----------------|------------|
+| Labour           | 38.2%                    | 39.0%        | 37.7%                         | 326               |
+| Conservative     | 30.4%                    | 30.0%        | 31.6%                         | 237               |
+| SNP              | 4.0%                     | 4.2%         | 4.0%                          | 58                |
+| Liberal Democrat | 10.4%                    | 10.0%        | 10.3%                         | 7                 |
+| Plaid Cymru      | 0.6%                     | 0.7%         | 0.7%                          | 2                 |
+| Green Party      | 6.7%                     | 6.2%         | 6.2%                          | 1                 |
+| Reform UK        | 3.7%                     | 4.0%         | 4.1%                          | 0                 |
+| Other            | 5.9%                     | 6.0%         | 5.4%                          | 1                 |
+
+![](voting_intention/Maps/MPR_result_map.png)
+
+![](voting_intention/Maps/MPR_result_map_by_edu.png)
+
+## [Example 2: Where is Keir Starmer an electoral asset to Labour?](https://github.com/hymeram/mrp/tree/main/starmer_likeability_mrp)
 
 How popular is Keir Starmer and where in the UK is he an electoral asset? The following example uses MRP on the latest British Election Study wave to measure his likeability by constituency and contrasts it with the likeability of the Labour Party more broadly.
 
@@ -18,30 +37,11 @@ To take a better look at where Starmer outperforms and underperforms Labour the 
 
 In Labour heartlands, Starmer is less popular than the Labour Party, this is especially true in the North West, the part of the UK where Starmer is least liked. Disconcertingly for Labour, in a lot of the target 'Red Wall' seats Starmer also appears less popular than the Labour Party as an organisation, potentially hindering Labour performance in this part of the UK.
 
-![](voting_intention/Maps/Labour_Starmer_Net_Likeability.png)
+![](starmer_likeability_mrp/Maps/Labour_Starmer_Net_Likeability.png)
 
 Differences in attitudes towards Labour and Starmer by age are dramatic. Especially among those under 30, Starmer is substantially less liked than Labour as a whole in nearly every constituency. Among those over the age of 60, Starmer is generally more popular then the Labour Party as a whole, apart from a few areas of the UK (including much of North West England and South Wales).
 
-![](voting_intention/Maps/Labour_Starmer_Net_Likeability_By_Age.png)
-
-## [Example 2: Estimating constituency voting intention using MRP](https://github.com/hymeram/mrp/tree/main/voting_intention)
-
-#### MRP Seat Estimates of BES Voting Intention (May 2022)
-
-| Party                  | Vote Intention (%) [95% CI] | MRP Seat Estimate |
-|------------------------|-----------------------------|-------------------|
-| Labour                 | 28.2 [27.6 - 28.8]          | 327               |
-| Conservative           | 22.4 [21.9 - 23.0]          | 235               |
-| SNP                    | 2.9 [2.7 - 3.1]             | 58                |
-| Liberal Democrat       | 7.6 [7.3 - 8.0]             | 7                 |
-| Plaid Cymru            | 0.4 [0.37 - 0.53]           | 2                 |
-| Green Party            | 5.0 [4.7 - 5.2]             | 1                 |
-| Reform UK              | 2.7 [2.5 - 3.0]             | 0                 |
-| Other                  | 1.7 [1.5 - 1.8]             | 1                 |
-| *Don't know*           | 20 [19.6 - 20.7]            | \-                |
-| *I would/did not vote* | 8.8 [8.3 - 9.2]             | \-                |
-
-![](voting_intention/Maps/MPR_result_map.png)
+![](starmer_likeability_mrp/Maps/Labour_Starmer_Net_Likeability_By_Age.png)
 
 ## Useful links:
 
