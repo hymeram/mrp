@@ -87,7 +87,7 @@ bes_clean <- bes_clean %>%
       p_education == "University or CNAA higher degree (e.g. M.Sc, Ph.D)" ~ "Level 4/5",
       p_education == "Youth training certificate/skillseekers" ~ "Level 2",
       TRUE ~ NA_character_),
-    age0 = cut(as.numeric(age), 
+    age0 = cut(as.numeric(as.character(age)), 
       breaks=c(-Inf, 19, 24, 29, 44, 59, 64, 74, Inf), 
       labels=c("16-19","20-24","25-29","30-44","45-59","60-64","65-74","75+"))) %>%
   select(-age,-p_housing,-p_education,-p_socgrade) 

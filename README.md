@@ -23,7 +23,7 @@ At a national level, MRP estimates voting intention broadly in-line with the wei
 #### MRP Seat Estimates of BES Voting Intention (May 2022)
 
 |      Party       | Weighted Survey Estimate | MRP Estimate | Turnout Adjusted MRP Estimate | MRP Seat Estimate |
-|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
+|:----------------:|:------------------------:|:------------:|:-----------------------------:|:-----------------:|
 |      Labour      |          38.2%           |    39.0%     |             37.7%             |        326        |
 |   Conservative   |          30.4%           |    30.0%     |             31.6%             |        237        |
 |       SNP        |           4.0%           |     4.2%     |             4.0%              |        58         |
