@@ -1,7 +1,7 @@
 ## Estimating voting intention at a constituency level using MRP
 
-The file is the script for a implementation of the MRP using the lme4 library for classical mixed models. For computational reasons I opted for lme4 over a Bayesian implementation of MRP.
+There are two scripts to implement voting intention MRP. The first is [turnout_model.R](https://github.com/hymeram/mrp/blob/main/1.voting_intention/turnout_model.R) which takes the [Chris Hanretty's poststratification frame](https://journals.sagepub.com/doi/suppl/10.1177/1478929919864773/suppl_file/hlv_psw.csv) and then fits a logistic multilevel model using the brms library (a R frontend to the Bayesian modelling software Stan) to predict likely turnout for each of the demographic categories. This model is fitted using BES post-election survey data for 2015 and 2017 where they validated turnout using the electoral roll (the underlying assumption of such an approach is that turnout patterns will roughly resemble previous elections).
 
-The post-stratification frame was created by Professor Chris Hanretty and is available here: <https://journals.sagepub.com/doi/suppl/10.1177/1478929919864773/suppl_file/hlv_psw.csv>.
+From there the [voting_intention_mrp_brms.R](https://github.com/hymeram/mrp/blob/main/1.voting_intention/voting_intention_mrp_brms.R) script implements a multinomial logistic multilevel model using brms to estimate voting intention for each demographic category. The survey data is from the latest wave of the BES panel (May 2022). These predictions are then weighted by their scale of the population and adjusted for likely turnout to give estimates for each constituency.
 
-The hexmap was created by the [House of Commons Library](https://github.com/houseofcommonslibrary/uk-hex-cartograms-noncontiguous)
+The hexmap was created by the [ODI Leeds](https://open-innovations.org/projects/hexmaps/constituencies/index.html)

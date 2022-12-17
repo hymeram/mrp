@@ -10,7 +10,7 @@ Secondly, MRP is used for small area estimation. In 2017, [YouGov introduced MRP
 
 The following examples show some of my experiments with MRP to investigate social and political questions that I find interesting.
 
-## [Example 1: Estimating constituency voting intention using MRP](https://github.com/hymeram/mrp/tree/main/voting_intention)
+## [Example 1: Estimating constituency voting intention using MRP](https://github.com/hymeram/mrp/tree/main/1.voting_intention)
 
 In the UK, politics is decided at the local level with elections occurring within constituencies, wards, and other electoral units. However - while elections occur locally - political polling tends to be national. Most polsters look to interview a 'nationally representative sample' of around 1000 respondents. While this gives a respectable margin of error at the national level we can't get reliable estimates for individual electoral units because of small sample sizes and the fact the sample is unlikely to be representative of the smaller units. Because of this, traditional polling can only give us a broad picture of how many seats each party would win if there were to be an election (using simple models like National Uniform Swing).
 
@@ -23,7 +23,7 @@ At a national level, MRP estimates voting intention broadly in-line with the wei
 #### MRP Seat Estimates of BES Voting Intention (May 2022)
 
 |      Party       | Weighted Survey Estimate | MRP Estimate | Turnout Adjusted MRP Estimate | MRP Seat Estimate |
-|:----------------:|:------------------------:|:------------:|:-----------------------------:|:-----------------:|
+|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
 |      Labour      |          38.2%           |    39.0%     |             37.7%             |        326        |
 |   Conservative   |          30.4%           |    30.0%     |             31.6%             |        237        |
 |       SNP        |           4.0%           |     4.2%     |             4.0%              |        58         |
@@ -43,7 +43,7 @@ One of the most interesting aspects of MRP is that estimates can be analysed by 
 
 ![](1.voting_intention/Maps/MPR_result_map_by_edu.png)
 
-## [Example 2: Where is Keir Starmer an electoral asset to Labour?](https://github.com/hymeram/mrp/tree/main/starmer_likeability_mrp)
+## [Example 2: Where is Keir Starmer an electoral asset to Labour?](https://github.com/hymeram/mrp/tree/main/2.starmer_likeability)
 
 How popular is Keir Starmer and where in the UK is he an electoral asset? The following example uses MRP on the latest British Election Study wave to measure his likeability by constituency and contrasts it with the likeability of the Labour Party more broadly.
 
