@@ -4,4 +4,4 @@ There are two scripts to implement voting intention MRP. The first is [turnout_m
 
 From there the [voting_intention_mrp_brms.R](https://github.com/hymeram/mrp/blob/main/1.voting_intention/voting_intention_mrp_brms.R) script implements a multinomial logistic multilevel model using brms to estimate voting intention for each demographic category. The survey data is from the latest wave of the BES panel (May 2022). These predictions are then weighted by their scale of the population and adjusted for likely turnout to give estimates for each constituency.
 
-The hexmap was created by the [ODI Leeds](https://open-innovations.org/projects/hexmaps/constituencies/index.html)
+The hexmap used for visualizing constituency results was created by the [ODI Leeds](https://open-innovations.org/projects/hexmaps/constituencies/index.html).

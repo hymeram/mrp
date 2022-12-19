@@ -6,7 +6,6 @@ library(sf)
 library(curl)
 library(tidyverse)
 library(brms)
-library(bayesplot)
 library(doParallel)
 library(parlitools)
 library(survey)
@@ -137,12 +136,12 @@ priors <- c(
 voting_intention_model <- brm(
   'vote_intention ~ 
   (1|ONSConstID) + 
-  (1|age0) + 
-  (1|education) + 
-  (1|hrsocgrd) +
-  (1|gor) +
+  (1 + sex + housing + hrsocgrd + age0 + education | gor) +
   sex +
   housing +
+  hrsocgrd +
+  age0 +
+  education + 
   c11PopulationDensity +
   c11LongTermUnemployed +
   Lab19 +
@@ -317,7 +316,7 @@ p1 <- ggplot(data=map.data) +
 
 ggsave("Maps/MPR_result_map.png",p1,dpi=300, height=8, width=8,bg="white")
 
-# results by subgroup ----------------------------------------------------------
+# results by education ----------------------------------------------------------
 education_pred <- combined_pred %>%
   group_by(Constit_Code, ConstituencyName.x, Winner19, Electorate19, education) %>%
   mutate(group_pop = (Electorate19*(weight*turnout))) %>%
@@ -361,3 +360,98 @@ p2 <- ggplot(data=subgroup.map.data %>% filter(education != "Other")) +
     ))
 
 ggsave("Maps/MPR_result_map_by_edu.png",p2,dpi=300, height=8, width=9,bg="white")
+
+# results by age ---------------------------------------------------------------
+age_pred <- combined_pred %>%
+  group_by(Constit_Code, ConstituencyName.x, Winner19, Electorate19, age0) %>%
+  mutate(group_pop = (Electorate19*(weight*turnout))) %>%
+  summarise(
+    Conservative = sum(vote_intention.P.Y...Conservative. * (group_pop/sum(group_pop))),
+    Labour = sum(vote_intention.P.Y...Labour. * (group_pop/sum(group_pop))),
+    `Liberal Democrat` = sum(vote_intention.P.Y...Liberal.Democrat. * (group_pop/sum(group_pop))),
+    `Scottish National Party` = sum(vote_intention.P.Y...SNP. * (group_pop/sum(group_pop))),
+    `Plaid Cymru` = sum(vote_intention.P.Y...Plaid.Cymru. * (group_pop/sum(group_pop))),
+    Green = sum(vote_intention.P.Y...Green.Party. * (group_pop/sum(group_pop))),
+    `Reform UK` = sum(vote_intention.P.Y...Reform.UK. * (group_pop/sum(group_pop))),
+    Other = sum(vote_intention.P.Y...Other. * (group_pop/sum(group_pop)))
+  )
+
+# winner
+party_names <- age_pred[,6:12]
+age_pred$Winner <- colnames(party_names)[max.col(party_names, ties.method = "first")]
+
+subgroup.map.data <- merge(west_hex_map, age_pred, by.x="GSSCode", by.y="Constit_Code")
+
+# plot
+p3 <- ggplot(data=subgroup.map.data) +
+  geom_sf(aes(fill=Winner),colour=NA) + 
+  theme_void() + 
+  labs(title = "MRP Estimates of Constituency Voting Intention by Age",
+       subtitle = "British Election Study Wave 23\nFieldwork: May 2022\n ") +
+  facet_wrap(~age0) +
+  scale_fill_manual(
+    name = "Largest Party",
+    values = c(
+      "Conservative" = "deepskyblue",
+      "Labour" = "#FF2F54",
+      "Scottish National Party" = "gold",
+      "Liberal Democrat" = "orange",
+      "Green" = "darkgreen",
+      "Plaid Cymru" = "lightgreen",
+      "Speaker" = "grey"
+    ))
+
+ggsave("Maps/MPR_result_map_by_age.png",p3,dpi=300, height=8, width=9,bg="white")
+
+## 2019 comp -------------------------------------------------------------
+
+final_pred <- read.csv('BES_MRP_Voting_Intention.csv')
+
+comparison <- aux %>%
+  merge(final_pred, by.x = "ONSConstID", by.y = "Constit_Code")
+
+# con
+c <- ggplot(aes(x=Con19,y=Conservative*100), data=comparison) +
+  geom_point(color = "blue", alpha = .2) + 
+  geom_abline(intercept =0 , slope = 1, colour="grey") +
+  scale_x_continuous(limits=c(0,100), name="Conservative 2019 (%)") + 
+  scale_y_continuous(limits=c(0,100), name="Conservative Estimate (%)") + 
+  theme_classic()
+
+# lab
+l <- ggplot(aes(x=Lab19,y=Labour*100), data=comparison) +
+  geom_point(color = "red", alpha = .2) + 
+  geom_abline(intercept =0 , slope = 1, colour="grey") +
+  scale_x_continuous(limits=c(0,100), name="Labour 2019 (%)") + 
+  scale_y_continuous(limits=c(0,100), name="Labour Estimate (%)") + 
+  theme_classic()
+
+# ld
+ld <- ggplot(aes(x=LD19,y=`Liberal.Democrat`*100), data=comparison) +
+  geom_point(color = "orange", alpha = .2) + 
+  geom_abline(intercept =0 , slope = 1, colour="grey") +
+  scale_x_continuous(limits=c(0,100), name="LibDem 2019 (%)") + 
+  scale_y_continuous(limits=c(0,100), name="Lib Dem Estimate (%)") + 
+  theme_classic()
+
+# snp
+snp <- ggplot(aes(x=SNP19,y=`Scottish.National.Party`*100), 
+       data=comparison %>% filter(SNP19 > 0)) +
+  geom_point(color = "gold", alpha = .5) + 
+  geom_abline(intercept =0 , slope = 1, colour="grey") +
+  scale_x_continuous(limits=c(0,100), name="SNP 2019 (%)") + 
+  scale_y_continuous(limits=c(0,100), name="SNP Estimated (%)") + 
+  theme_classic()
+
+# combine plots
+p3 <- ggpubr::ggarrange(
+  c,l,ld,snp,
+  ncol = 2,
+  nrow = 2)  
+
+p3 <- ggpubr::annotate_figure(
+  p3, 
+  top = ggpubr::text_grob("Comparison of MRP Estimates with 2019 Results",
+                  face = "bold", size = 14))
+
+ggsave("Maps/2019_comparison.png",p3,dpi=300, height=8, width=9,bg="white")
