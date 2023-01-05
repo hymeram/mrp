@@ -30,27 +30,26 @@ aux <- readxl::read_excel(temp) %>%
     ConstituencyName,
     pano,
     ONSConstID,
-    c11DeprivedNone,
     Electorate19,
     Country,
     Region,
-    Con19,
-    Lab19,
-    LD19,
-    Green19,
-    SNP19,
-    PC19,
-    Brexit19,
-    Winner19,
+    Con19, Lab19, LD19, Green19, SNP19, PC19, Brexit19, Winner19,
+    Lab17, Con17, LD17, Green17, SNP17, PC17, UKIP17,
+    Lab15, Con15, LD15, Green15, SNP15, PC15, UKIP15,
+    Lab10, Con10, LD10, Green10, SNP10, PC10, UKIP10,
     leaveHanretty,
     c11PopulationDensity,
-    c11LongTermUnemployed
+    c11EthnicityWhite,
+    c11DeprivedNone
     ) %>%
-  replace(is.na(.), 0)
+  replace(is.na(.), 0) %>%
+  merge(., read.csv("~/Data/constituency_groups.csv"),
+        by.x="ONSConstID", by.y="pcon.code") %>%
+  mutate_at(funs(scale(.)[,1]), .vars = vars(c(7:13,15:29)))
 
 # get runner up in 2019 election
 maxn <- function(n) function(x) order(x, decreasing = TRUE)[n]
-party_names <- aux[,8:14]
+party_names <- aux[,7:13]
 aux$Second19 <- colnames(party_names)[apply(party_names, 1, maxn(2))]
 aux$Second19 <- str_remove_all(aux$Second19, "19")
 
@@ -94,14 +93,14 @@ bes_clean <- bes_clean %>%
                breaks=c(-Inf, 19, 24, 29, 44, 59, 64, 74, Inf), 
                labels=c("16-19","20-24","25-29","30-44","45-59","60-64","65-74","75+")),
     vote_intention = case_when(
-      generalElectionVote == "I would/did not vote" ~ NA_character_,
+      generalElectionVote == "I would/did not vote" ~ "NoVote",
       generalElectionVote == "Conservative" ~ "Conservative",
       generalElectionVote == "Labour" ~ "Labour",
       generalElectionVote == "Liberal Democrat" ~ "Liberal Democrat",
       generalElectionVote == "Scottish National Party (SNP)" ~ "SNP",
       generalElectionVote == "Plaid Cymru" ~ "Plaid Cymru",
       generalElectionVote == "Green Party" ~ "Green Party",
-      generalElectionVote == "Don't know" ~ NA_character_,
+      generalElectionVote == "Don't know" ~ "DK",
       generalElectionVote == "Brexit Party/Reform UK" ~ "Reform UK",
       TRUE ~ "Other")
     ) %>%
@@ -115,44 +114,58 @@ df <- bes_clean %>%
 
 # voting intention model -------------------------------------------------------
 
+# set weakly informative priors
+coefs <- c(
+  "Con19", "Lab19", "LD19", "Green19", "SNP19", "PC19", "Brexit19",
+  "Lab17", "Con17", "LD17", "Green17", "SNP17", "PC17", "UKIP17", 
+  "Lab15", "Con15", "LD15", "Green15", "SNP15", "PC15", "UKIP15",
+  "Lab10", "Con10", "LD10", "Green10", "SNP10", "PC10", "UKIP10",
+  "sexFemale", "housingRents",
+  "leaveHanretty", "c11PopulationDensity","c11EthnicityWhite"
+  )
+groups <- c(
+  "age0", "education", "hrsocgrd", "age0:education","ONSConstID", "gor", "Group"
+  )
 priors <- c(
-  prior(normal(0,1), class = b, dpar=muGreenParty),
-  prior(normal(0,1), class = b, dpar=muLabour),
-  prior(normal(0,1), class = b, dpar=muLiberalDemocrat),
-  prior(normal(0,1), class = b, dpar=muOther),
-  prior(normal(0,1), class = b, dpar=muSNP),
-  prior(normal(0,1), class = b, dpar=muReformUK),
-  prior(normal(0,1), class = b, dpar=muPlaidCymru),
-  prior(normal(0,5), class = Intercept),
-  prior(exponential(0.5), class = sd, dpar = muLabour) ,
-  prior(exponential(0.5), class = sd, dpar = muGreenParty) ,
-  prior(exponential(0.5), class = sd, dpar = muOther) ,
-  prior(exponential(0.5), class = sd, dpar = muSNP) ,
-  prior(exponential(0.5), class = sd, dpar = muPlaidCymru) ,
-  prior(exponential(0.5), class = sd, dpar = muLiberalDemocrat),
-  prior(exponential(0.5), class = sd, dpar = muReformUK)
+  prior_string("normal(0,1)", class = "b", coef = coefs, dpar="muGreenParty"),
+  prior_string("normal(0,1)", class = "b", coef = coefs, dpar="muLabour"),
+  prior_string("normal(0,1)", class = "b", coef = coefs, dpar="muLiberalDemocrat"),
+  prior_string("normal(0,1)", class = "b", coef = coefs, dpar="muOther"),
+  prior_string("normal(0,1)", class = "b", coef = coefs, dpar="muSNP"),
+  prior_string("normal(0,1)", class = "b", coef = coefs, dpar="muReformUK"),
+  prior_string("normal(0,1)", class = "b", coef = coefs, dpar="muPlaidCymru"),
+  prior_string("normal(0,1)", class = "b", coef = coefs, dpar="muDK"),
+  prior_string("normal(0,1)", class = "b", coef = coefs, dpar="muNoVote"),
+  prior_string("student_t(5,0,2.5)", class = "sd", group = groups, dpar = "muLabour") ,
+  prior_string("student_t(5,0,2.5)", class = "sd", group = groups, dpar = "muGreenParty") ,
+  prior_string("student_t(5,0,2.5)", class = "sd", group = groups, dpar = "muOther") ,
+  prior_string("student_t(5,0,2.5)", class = "sd", group = groups, dpar = "muSNP") ,
+  prior_string("student_t(5,0,2.5)", class = "sd", group = groups, dpar = "muPlaidCymru") ,
+  prior_string("student_t(5,0,2.5)", class = "sd", group = groups, dpar = "muLiberalDemocrat"),
+  prior_string("student_t(5,0,2.5)", class = "sd", group = groups, dpar = "muReformUK"),
+  prior_string("student_t(5,0,2.5)", class = "sd", group = groups, dpar = "muDK"),
+  prior_string("student_t(5,0,2.5)", class = "sd", group = groups, dpar = "muNoVote")
 )
 
 voting_intention_model <- brm(
   'vote_intention ~ 
   (1|ONSConstID) + 
-  (1 + sex + housing + hrsocgrd + age0 + education | gor) +
+  (1|Group) +
+  (1|gor)+
+  (1|hrsocgrd) + 
+  (1|age0) + 
+  (1|education) +
+  (1|age0:education) +
   sex +
   housing +
-  hrsocgrd +
-  age0 +
-  education + 
+  Lab19 + Con19 + LD19 + Green19 + SNP19 + PC19 + Brexit19 + 
+  Lab17 + Con17 + LD17 + Green17 + SNP17 + PC17 + UKIP17 +
+  Lab15 + Con15 + LD15 + Green15 + SNP15 + PC15 + UKIP15 +
+  Lab10 + Con10 + LD10 + Green10 + SNP10 + PC10 + UKIP10 +
+  leaveHanretty + 
   c11PopulationDensity +
-  c11LongTermUnemployed +
-  Lab19 +
-  LD19 +
-  Green19 +
-  SNP19 +
-  PC19 +
-  Con19 +
-  Winner19 + 
-  Second19 +
-  leaveHanretty',
+  c11EthnicityWhite + 
+  c11DeprivedNone',
   family = categorical(),
   data = df,
   prior = priors,
@@ -176,8 +189,8 @@ voting_intention_model <- readRDS("Models/voting_intention_model.RDS")
 
 # import poststratification frame
 # this frame is by Professor Chris Hanretty the original is available here: 
-# predicted turnout has then been modeled by me using 2015 and 2017 BES data
 # "https://journals.sagepub.com/doi/suppl/10.1177/1478929919864773/suppl_file/hlv_psw.csv"
+# predicted turnout has then been modeled using 2015 and 2017 BES data
 
 psf_location <- "psf_turnout.csv"
 psf <- read.csv(psf_location, stringsAsFactors = FALSE)
@@ -199,9 +212,11 @@ for (i in unique(psf$gor)){
     robust = TRUE)
   write.csv(psf_area, paste0("~/Data/psf/Vote intention/",i,".csv"))
 }
-#rbind chunks
+#combine predicted chunks
 filenames=list.files(path="~/Data/psf/Vote intention/",pattern = ".csv",full.names=TRUE)
-combined_pred <- do.call(rbind,lapply(filenames, read.csv))
+combined_pred <- do.call(rbind,lapply(filenames, read.csv)) %>%
+  mutate(vote_intention.P.Y...SNP. = ifelse(gor != "Scotland",0,vote_intention.P.Y...SNP.)) %>%
+  mutate(vote_intention.P.Y...Plaid.Cymru. = ifelse(gor != "Wales",0,vote_intention.P.Y...Plaid.Cymru.))
 
 # summarise
 final_pred <- combined_pred %>%
@@ -216,7 +231,21 @@ final_pred <- combined_pred %>%
     Green = sum(vote_intention.P.Y...Green.Party. * (group_pop/sum(group_pop))),
     `Reform UK` = sum(vote_intention.P.Y...Reform.UK. * (group_pop/sum(group_pop))),
     Other = sum(vote_intention.P.Y...Other. * (group_pop/sum(group_pop)))
-  )
+  ) %>%
+  mutate(valid_prop = sum(
+    Conservative, Labour, `Liberal Democrat`, `Scottish National Party`,
+    `Plaid Cymru`, Green, `Reform UK`, Other)
+    ) %>%
+  mutate(
+    Conservative = Conservative / valid_prop,
+    Labour = Labour / valid_prop,
+    `Liberal Democrat` = `Liberal Democrat` / valid_prop,
+    `Scottish National Party` = `Scottish National Party` / valid_prop,
+    `Plaid Cymru` = `Plaid Cymru` / valid_prop,
+    Green = Green / valid_prop,
+    `Reform UK` = `Reform UK` / valid_prop,
+    Other = Other / valid_prop,
+         ) 
 
 # winner
 party_names <- final_pred[,5:11]
@@ -231,9 +260,10 @@ final_pred <- final_pred %>%
       Winner == "Labour" & Winner19 != "Labour" ~ "Labour Gain",
       Winner == "Conservative" & Winner19 != "Conservative" ~ "Conservative Gain",
       Winner == "Liberal Democrat" & Winner19 != "Liberal Democrat" ~ "Liberal Democrat Gain",
-      Winner == "Scottish National Party" & Winner19 != "Scottish National Party" ~ "SNP Gain",
+      Winner == "Scottish National Party" & Winner19 != "Scottish National Party" ~ "Scottish National Party Gain",
       Winner == "Green" & Winner19 != "Green" ~ "Green Gain"
-  ))
+  )) %>%
+  select(-valid_prop)
 
 write.csv(final_pred, "BES_MRP_Voting_Intention.csv")
 
@@ -270,7 +300,23 @@ combined_pred %>%
     `Plaid Cymru` = sum(vote_intention.P.Y...Plaid.Cymru. * weight_national),
     `Reform UK` = sum(vote_intention.P.Y...Reform.UK. * weight_national),
     Green = sum(vote_intention.P.Y...Green.Party. * weight_national),
-    Other = sum(vote_intention.P.Y...Other. * weight_national)
+    Other = sum(vote_intention.P.Y...Other. * weight_national),
+    DK = sum(vote_intention.P.Y...DK. * weight_national),
+    NoVote = sum(vote_intention.P.Y...NoVote. * weight_national),
+  ) %>%
+  mutate(valid_prop = sum(
+    Conservative, Labour, `Liberal Democrat`, `Scottish National Party`,
+    `Plaid Cymru`, Green, `Reform UK`, Other)
+  ) %>%
+  transmute(
+    Conservative = Conservative / valid_prop,
+    Labour = Labour / valid_prop,
+    `Liberal Democrat` = `Liberal Democrat` / valid_prop,
+    `Scottish National Party` = `Scottish National Party` / valid_prop,
+    `Plaid Cymru` = `Plaid Cymru` / valid_prop,
+    Green = Green / valid_prop,
+    `Reform UK` = `Reform UK` / valid_prop,
+    Other = Other / valid_prop,
   )
 
 # vote share MRP with modeled turnout
@@ -284,10 +330,24 @@ combined_pred %>%
     `Plaid Cymru` = sum(vote_intention.P.Y...Plaid.Cymru. * (group_pop/sum(group_pop))),
     `Reform UK` = sum(vote_intention.P.Y...Reform.UK. * (group_pop/sum(group_pop))),
     Green = sum(vote_intention.P.Y...Green.Party. * (group_pop/sum(group_pop))),
-    Other = sum(vote_intention.P.Y...Other. * (group_pop/sum(group_pop)))
+    Other = sum(vote_intention.P.Y...Other. * (group_pop/sum(group_pop))),
+    DK = sum(vote_intention.P.Y...DK. * (group_pop/sum(group_pop))),
+    NoVote = sum(vote_intention.P.Y...NoVote. * (group_pop/sum(group_pop))),
+  ) %>%
+  mutate(valid_prop = sum(
+    Conservative, Labour, `Liberal Democrat`, `Scottish National Party`,
+    `Plaid Cymru`, Green, `Reform UK`, Other)
+  ) %>%
+  transmute(
+    Conservative = Conservative / valid_prop,
+    Labour = Labour / valid_prop,
+    `Liberal Democrat` = `Liberal Democrat` / valid_prop,
+    `Scottish National Party` = `Scottish National Party` / valid_prop,
+    `Plaid Cymru` = `Plaid Cymru` / valid_prop,
+    Green = Green / valid_prop,
+    `Reform UK` = `Reform UK` / valid_prop,
+    Other = Other / valid_prop,
   )
-
-
 
 # visualisation ----------------------------------------------------------------
 west_hex_map$GSSCode<- west_hex_map$gss_code
@@ -305,7 +365,7 @@ p1 <- ggplot(data=map.data) +
     "Conservative Hold" = "deepskyblue",
     "Labour Gain" = "#dc2626",
     "Labour Hold" = "#f87171",
-    "SNP Gain" = "#fcd34d",
+    "Scottish National Party Gain" = "#fcd34d",
     "Scottish National Party Hold" = "#fef08a",
     "Liberal Democrat Gain" = "#f97316",
     "Liberal Democrat Hold" = "#fb923c",
@@ -361,51 +421,17 @@ p2 <- ggplot(data=subgroup.map.data %>% filter(education != "Other")) +
 
 ggsave("Maps/MPR_result_map_by_edu.png",p2,dpi=300, height=8, width=9,bg="white")
 
-# results by age ---------------------------------------------------------------
-age_pred <- combined_pred %>%
-  group_by(Constit_Code, ConstituencyName.x, Winner19, Electorate19, age0) %>%
-  mutate(group_pop = (Electorate19*(weight*turnout))) %>%
-  summarise(
-    Conservative = sum(vote_intention.P.Y...Conservative. * (group_pop/sum(group_pop))),
-    Labour = sum(vote_intention.P.Y...Labour. * (group_pop/sum(group_pop))),
-    `Liberal Democrat` = sum(vote_intention.P.Y...Liberal.Democrat. * (group_pop/sum(group_pop))),
-    `Scottish National Party` = sum(vote_intention.P.Y...SNP. * (group_pop/sum(group_pop))),
-    `Plaid Cymru` = sum(vote_intention.P.Y...Plaid.Cymru. * (group_pop/sum(group_pop))),
-    Green = sum(vote_intention.P.Y...Green.Party. * (group_pop/sum(group_pop))),
-    `Reform UK` = sum(vote_intention.P.Y...Reform.UK. * (group_pop/sum(group_pop))),
-    Other = sum(vote_intention.P.Y...Other. * (group_pop/sum(group_pop)))
-  )
-
-# winner
-party_names <- age_pred[,6:12]
-age_pred$Winner <- colnames(party_names)[max.col(party_names, ties.method = "first")]
-
-subgroup.map.data <- merge(west_hex_map, age_pred, by.x="GSSCode", by.y="Constit_Code")
-
-# plot
-p3 <- ggplot(data=subgroup.map.data) +
-  geom_sf(aes(fill=Winner),colour=NA) + 
-  theme_void() + 
-  labs(title = "MRP Estimates of Constituency Voting Intention by Age",
-       subtitle = "British Election Study Wave 23\nFieldwork: May 2022\n ") +
-  facet_wrap(~age0) +
-  scale_fill_manual(
-    name = "Largest Party",
-    values = c(
-      "Conservative" = "deepskyblue",
-      "Labour" = "#FF2F54",
-      "Scottish National Party" = "gold",
-      "Liberal Democrat" = "orange",
-      "Green" = "darkgreen",
-      "Plaid Cymru" = "lightgreen",
-      "Speaker" = "grey"
-    ))
-
-ggsave("Maps/MPR_result_map_by_age.png",p3,dpi=300, height=8, width=9,bg="white")
-
-## 2019 comp -------------------------------------------------------------
+## 2019 comparison -------------------------------------------------------------
 
 final_pred <- read.csv('BES_MRP_Voting_Intention.csv')
+
+aux <- readxl::read_excel(temp) %>%
+  select(
+    ConstituencyName,
+    pano,
+    ONSConstID,
+    Electorate19,
+    Con19, Lab19, LD19, Green19, SNP19, PC19, Brexit19, Winner19)
 
 comparison <- aux %>%
   merge(final_pred, by.x = "ONSConstID", by.y = "Constit_Code")

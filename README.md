@@ -1,8 +1,8 @@
-# Multilevel Regression and Poststratification (MRP)
+# Multilevel Regression and Post-stratification (MRP)
 
 ## Intro
 
-Multilevel Regression and Poststratification (MRP or MrP) is an increasingly utilised method in survey research to make inferences about a target population from survey data that may not be representative of the target population. MRP has two primary uses, to correct for biased survey samples and for small area estimation. The following examples show some of my experiments with MRP to investigate some of the social and political questions I find interesting.
+Multilevel Regression and Post-stratification (MRP or MrP) is an increasingly utilised method in survey research to make inferences about a target population from survey data that may not be representative of the target population. MRP has two primary uses, to correct for biased survey samples and for small area estimation. The following examples show some of my experiments with MRP to investigate some of the social and political questions I find interesting.
 
 ## [Example 1: Estimating constituency voting intention using MRP](https://github.com/hymeram/mrp/tree/main/1.voting_intention)
 
@@ -13,23 +13,23 @@ The table below shows that the MRP model estimates of national voting intention 
 #### MRP Seat Estimates of BES Voting Intention (May 2022)
 
 |      Party       | Weighted Survey Estimate | MRP Estimate | Turnout Adjusted MRP Estimate | MRP Seat Estimate |
-|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
-|      Labour      |          38.2%           |    38.1%     |             36.8%             |        325        |
-|   Conservative   |          30.4%           |    30.5%     |             32.0%             |        234        |
-|       SNP        |           4.0%           |     4.3%     |             4.1%              |        59         |
-| Liberal Democrat |          10.4%           |    10.1%     |             10.4%             |         8         |
-|   Plaid Cymru    |           0.6%           |     0.8%     |             0.8%              |         4         |
-|   Green Party    |           6.7%           |     6.6%     |             6.5%              |         1         |
-|    Reform UK     |           3.7%           |     4.2%     |             4.2%              |         0         |
-|      Other       |           5.9%           |     5.5%     |             5.1%              |         1         |
+|:------------:|:------------:|:------------:|:---------------:|:------------:|
+|      Labour      |          38.2%           |    38.2%     |             36.9%             |        312        |
+|   Conservative   |          30.4%           |    30.9%     |             32.5%             |        248        |
+|       SNP        |           4.0%           |     4.2%     |             4.0%              |        58         |
+| Liberal Democrat |          10.4%           |    10.5%     |             10.9%             |         9         |
+|   Plaid Cymru    |           0.6%           |     0.6%     |             0.6%              |         3         |
+|   Green Party    |           6.7%           |     6.5%     |             6.3%              |         1         |
+|    Reform UK     |           3.7%           |     3.8%     |             3.9%              |         0         |
+|      Other       |           5.9%           |     5.3%     |             4.9%              |         1         |
 
 In terms of Parliamentary seats, Labour is estimated to achieve a small majority in Parliament with the Conservatives having a large fall. The map below shows Labour regaining much of the North of England, Wales and sweeping the Conservatives from London.
 
 ![](1.voting_intention/Maps/MPR_result_map.png)
 
-The two main party results seem sensible given the vote shares and broadly aligns with [MRP analysis by Focaldata](https://www.bestforbritain.org/may_2022_mrp_analysis) from around that time. Where I'm less confident in the model is the estimates for the SNP. The model predicts the SNP to sweep Scotland which seems unlikely to me, especially in areas like Orkney and Shetland. I suspect the reason for this could be that the model doesn't adequately capture tactical voting and is therefore underestimating the extent Unionist voters would coallese against the SNP were there to be an election.
+The two main party results seem sensible given the vote shares and broadly aligns with [MRP analysis by Focaldata](https://www.bestforbritain.org/may_2022_mrp_analysis) from around that time. Where I'm less confident in the model is the estimates for Scotland. The model predicts the SNP to nearly sweep Scotland, the scale of the estimated SNP victory seems a tad unlikely to me, especially in areas like Orkney and Shetland. Further investigation is needed and it will be interesting to see how the model performs when applied to later waves of the BES.
 
-In general, the model also seems to underestimate the likelihood of landslide victories. The charts below show the main parties are generally estimated to do better in seats they performed poorly in in 2019 and worse in seats where they won by a wide margin. I plan to investigate this further and see if the model can be improved to address this.
+One obvious improvement that could be made is to the post-stratification frame, many researchers incorporate non-census variables such as the 2019 election vote and 2016 referendum vote at an individual level. However, estimating the population distribution of these variables is difficult and I'm currently experimenting with different methods of doing this.
 
 ![](1.voting_intention/Maps/2019_comparison.png)
 

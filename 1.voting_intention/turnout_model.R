@@ -130,7 +130,11 @@ turnout_model <- brm(
   (1|age0:year) +
   (1|education) + 
   (1|education:age0) + 
+  (1|education:year) + 
   (1|gor:year) +
+  (1|gor:education) +
+  (1|gor:sex) +
+  (1|gor:age0) +
   sex + 
   year +
   c11DeprivedNone +
